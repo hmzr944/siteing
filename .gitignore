@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Sorties de relevés: régénérables, jamais versionnées.
+out/
+
+# Réponses brutes archivées. Elles servent la contestation d'un chiffre et
+# peuvent contenir des données de prospects: elles n'ont pas leur place dans
+# un dépôt de code.
+archives/

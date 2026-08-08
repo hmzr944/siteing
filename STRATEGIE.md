@@ -1,6 +1,13 @@
 # Après le site web : 3 modèles disruptifs pour la présence en ligne des entreprises
 
 > Document stratégique — Blue Ocean / psychologie comportementale / croissance B2B
+>
+> **Décision prise depuis : le concept 1 (Source Primaire) est retenu comme point
+> d'entrée, les deux autres deviennent les phases 2 et 3.** Ce document garde
+> l'exploration complète et le raisonnement qui a conduit au choix ; le plan
+> engagé, l'économie et le playbook sont dans [`docs/PLAN.md`](docs/PLAN.md),
+> [`docs/ECONOMIE.md`](docs/ECONOMIE.md) et [`docs/VENTE.md`](docs/VENTE.md). Le
+> moteur de mesure de la Part de Citation est construit et testé (`citation_audit/`).
 
 ---
 

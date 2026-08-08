@@ -1,0 +1,40 @@
+{
+  "_note": "Second marché de démonstration, choisi pour prouver l'universalité du modèle: prestation intellectuelle B2B, panier moyen élevé, cycle long. Noms fictifs.",
+  "id": "expert-comptable-nantes",
+  "label": "Expertise comptable — Nantes",
+  "category": "expert-comptable",
+  "category_plural": "experts-comptables",
+  "zone": "Nantes",
+  "services": [
+    "la création d'une SAS",
+    "l'accompagnement d'une startup en levée de fonds",
+    "un audit de TVA",
+    "l'externalisation de la paie"
+  ],
+  "constraints": [
+    "spécialisé e-commerce",
+    "avec un interlocuteur dédié",
+    "habitué aux entreprises innovantes",
+    "au forfait annuel"
+  ],
+  "economics": {
+    "monthly_intent_volume": 260,
+    "avg_deal_value": 3600,
+    "close_rate": 0.18
+  },
+  "entities": [
+    {
+      "id": "berthier-associes",
+      "name": "Berthier & Associés",
+      "aliases": ["Cabinet Berthier"],
+      "domains": ["berthier-associes.fr"],
+      "is_client": true,
+      "strength": 0.22
+    },
+    { "id": "loire-audit", "name": "Loire Audit Conseil", "domains": ["loire-audit.fr"], "strength": 0.89 },
+    { "id": "novexa", "name": "Novexa", "domains": ["novexa.fr"], "strength": 0.72 },
+    { "id": "atlantique-gestion", "name": "Atlantique Gestion", "domains": ["atlantique-gestion.fr"], "strength": 0.58 },
+    { "id": "cabinet-morvan", "name": "Cabinet Morvan", "aliases": ["Morvan Expertise"], "domains": ["cabinet-morvan.fr"], "strength": 0.41 },
+    { "id": "fiduce", "name": "Fiducé", "domains": ["fiduce.fr"], "strength": 0.3 }
+  ]
+}
