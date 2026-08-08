@@ -43,6 +43,43 @@ def _run(market: Market, specs: list[str], archive_dir: Path | None):
     return prompts, runs
 
 
+def _publish_dossier(args) -> int:
+    from .creneau import Registry
+    from .dossier import DECLARED, EXPIRED, REFUTED, VERIFIED, Dossier
+    from .publish import write_bundle
+
+    dossier = Dossier.load(args.dossier)
+    registry = Registry.load(args.registry) if args.registry else None
+    counts = dossier.counts()
+
+    print(f"DOSSIER DE VÉRITÉ — {dossier.name}")
+    print(f"{dossier.category} · {dossier.zone}")
+    print(
+        f"vérifiées {counts[VERIFIED]} · déclarées {counts[DECLARED]} · "
+        f"expirées {counts[EXPIRED]} · réfutées {counts[REFUTED]} "
+        f"({dossier.verified_ratio():.0%} du dossier vérifié)"
+    )
+
+    expiring = dossier.expiring_soon()
+    if expiring:
+        print("\nÀ RENOUVELER SOUS 60 JOURS")
+        for claim in expiring:
+            print(f"  · {claim.label} — expire le {claim.valid_until} "
+                  f"({claim.days_until_expiry()} jours)")
+
+    stale = dossier.stale()
+    if stale:
+        print("\nNON PUBLIÉ VERS LA COUCHE MACHINE")
+        for claim in stale:
+            print(f"  · {claim.label} ({claim.status_label().lower()})")
+
+    written = write_bundle(args.out, dossier, registry, args.url)
+    print("\nPUBLIÉ")
+    for name, path in written.items():
+        print(f"  {path}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="citation_audit",
@@ -65,7 +102,19 @@ def main(argv: list[str] | None = None) -> int:
     audit.add_argument("--out", type=Path, help="dossier de sortie (rapport HTML + JSON)")
     audit.add_argument("--archive", type=Path, help="dossier d'archivage des réponses brutes")
 
+    publish = sub.add_parser(
+        "dossier", help="publie un Dossier de Vérité (page publique + sorties machine)"
+    )
+    publish.add_argument("dossier")
+    publish.add_argument("--out", type=Path, default=Path("out"))
+    publish.add_argument("--registry", type=Path, help="registre des créneaux (JSON)")
+    publish.add_argument("--url", help="URL publique de la page, incluse au manifeste")
+
     args = parser.parse_args(argv)
+
+    if args.command == "dossier":
+        return _publish_dossier(args)
+
     market = Market.load(args.market)
 
     if args.command == "basket":

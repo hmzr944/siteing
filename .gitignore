@@ -10,3 +10,6 @@ out/
 # peuvent contenir des données de prospects: elles n'ont pas leur place dans
 # un dépôt de code.
 archives/
+
+# Registre des créneaux: état d'exploitation, pas du code.
+registre/

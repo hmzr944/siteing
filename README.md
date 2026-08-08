@@ -21,11 +21,12 @@ un bien rival, et un produit qui l'ouvre à tous annule sa propre promesse.
 | | |
 |---|---|
 | [`docs/PLAN.md`](docs/PLAN.md) | la décision : offre, prix, feuille de route, risques, preuve à 90 jours |
+| [`docs/DOSSIER.md`](docs/DOSSIER.md) | le Dossier de Vérité : la partie livrée, ses statuts, ses sorties machine, le registre des créneaux |
 | [`docs/METHODE.md`](docs/METHODE.md) | la méthode de mesure, limites incluses — destinée à être publique |
 | [`docs/ECONOMIE.md`](docs/ECONOMIE.md) | unité économique, trajectoire, sensibilité |
 | [`docs/VENTE.md`](docs/VENTE.md) | le playbook d'acquisition : séquences, objections, seuils |
 | [`STRATEGIE.md`](STRATEGIE.md) | les trois concepts explorés au départ, et pourquoi celui-ci |
-| `citation_audit/` | le moteur de mesure |
+| `citation_audit/` | le moteur de mesure et le Dossier de Vérité |
 | `tools/economics.py` | le modèle économique, exécutable |
 
 ## Démarrer
@@ -39,6 +40,10 @@ python3 -m citation_audit basket markets/plombier-bordeaux.json
 # un relevé de démonstration (moteur simulé, hors ligne)
 python3 -m citation_audit audit markets/plombier-bordeaux.json \
     --provider synthetic:7 --provider synthetic:19 --out out/
+
+# publier un Dossier de Vérité: page publique + sorties machine
+python3 -m citation_audit dossier dossiers/vasseur.json \
+    --registry registre/creneaux.json --out out/
 
 # le modèle économique
 python3 tools/economics.py
@@ -75,6 +80,27 @@ au corpus exact qui l'a produit, et rejouable avec `--provider fixture:<archive>
   concurrent est cité, nommé. Ce ne sont pas des statistiques, ce sont des pertes
   identifiées.
 
+## Ce qui est livré au client
+
+Le moteur diagnostique ; le **Dossier de Vérité** est ce qui se facture chaque
+mois. C'est un ensemble d'affirmations sur l'entreprise, chacune avec son statut
+et les pièces qui l'appuient, gouverné par une seule règle :
+
+> Seules les affirmations **vérifiées** sont publiées vers la couche machine.
+
+Une affirmation déclarée reste visible par un humain, marquée comme telle, et
+n'est jamais exportée comme un fait. Une vérification **expire** : un dossier
+constitué une fois vaut une déclaration, c'est sa tenue dans le temps qui se
+facture. Détails dans [`docs/DOSSIER.md`](docs/DOSSIER.md).
+
+La **Page de Vérité** publie tout cela pour deux lecteurs à la fois : un humain
+qui vérifie avant d'appeler, et un agent qui parse le JSON-LD embarqué. Sa
+section la plus importante est celle qui liste **ce qui n'est pas vérifié**, sans
+laquelle le reste ne serait pas croyable.
+
+Le **registre des créneaux** fait de l'exclusivité vendue une contrainte du
+système plutôt qu'une promesse orale. Il ne prévient pas, il refuse.
+
 ## Les garde-fous, et pourquoi ils sont dans le code
 
 La crédibilité de la mesure est le seul actif de l'entreprise. Elle est donc
@@ -95,5 +121,11 @@ défendue par le programme, pas par une consigne :
   Garantir une place chez un éditeur tiers est intenable, et le refuser est un
   argument de vente.
 
-73 tests couvrent ces invariants, la normalisation, le calcul des parts et le
-modèle économique.
+- **la frontière du vérifié**, testée: une seule valeur non contrôlée qui fuirait
+  dans le JSON-LD fait échouer la suite. Et les valeurs d'affirmations ne peuvent
+  pas s'échapper de leur bloc `<script>`.
+
+146 tests couvrent ces invariants, la normalisation, le calcul des parts, les
+statuts de vérification, les conflits de créneaux, le modèle économique, et les
+règles de conception de la Page de Vérité. Une règle de design non testée est une
+règle qui sera violée à la prochaine modification.
