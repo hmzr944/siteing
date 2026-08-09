@@ -1,5 +1,10 @@
 # SÈVE — la présence vivante
 
+> **Écarté.** Ce document a été démonté sur trois points: des capteurs logiciels
+> qui n'existent pas chez une TPE, un récit site-centré, et une part du résultat
+> inattribuable. Conservé comme trace du raisonnement. Le document directeur est
+> [`PAROLE.md`](PAROLE.md).
+
 > Document de stratégie. Il définit l'axe non exploité du marché de la présence
 > en ligne, la solution qui l'occupe, et la manière de la vendre.
 >

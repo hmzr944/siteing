@@ -1,5 +1,8 @@
 # Après le site web : 3 modèles disruptifs pour la présence en ligne des entreprises
 
+> **Écarté.** Exploration initiale de trois concepts, dépassée deux fois depuis.
+> Le document directeur est [`PAROLE.md`](PAROLE.md).
+
 > Document stratégique — Blue Ocean / psychologie comportementale / croissance B2B
 >
 > **Décision prise depuis : le concept 1 (Source Primaire) est retenu comme point
