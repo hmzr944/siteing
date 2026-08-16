@@ -28,6 +28,10 @@ FAMILY_WEIGHTS: dict[str, float] = {
     "probleme": 1.0,
     "transactionnel": 1.3,
     "verification": 0.8,
+    # L'hyperlocal pèse lourd parce qu'il est à la fois le plus proche de
+    # l'achat et le moins disputé: peu de sources sont assez précises pour
+    # qu'un moteur cite quelqu'un sur un quartier nommé.
+    "hyperlocal": 1.15,
 }
 
 # Nombre maximum de prompts retenus par famille. Le panier complet est le
@@ -40,6 +44,7 @@ FAMILY_CAPS: dict[str, int] = {
     "probleme": 8,
     "transactionnel": 6,
     "verification": 4,
+    "hyperlocal": 10,
 }
 
 TEMPLATES: dict[str, list[str]] = {
@@ -75,6 +80,11 @@ TEMPLATES: dict[str, list[str]] = {
         "Que penses-tu de {entity} ?",
         "{entity} est-il fiable ?",
     ],
+    "hyperlocal": [
+        "Quel {cat} intervient à {district} ?",
+        "Je cherche un {cat} qui connaît bien {district}, lequel ?",
+        "Qui a déjà fait ce genre de chantier à {district} ?",
+    ],
 }
 
 
@@ -102,6 +112,15 @@ class Entity:
     # Force estimée de présence, utilisée uniquement par le provider de
     # démonstration. Sans effet sur une mesure réelle.
     strength: float = 0.5
+    # Rang Google constaté au moment du relevé. Sert à répondre à la seule
+    # question qui décide de la thèse: le rang Google prédit-il la citation
+    # par les moteurs de réponse ? Absent, l'entité est exclue du calcul de
+    # corrélation mais reste mesurée.
+    google_rank: int | None = None
+    # Strate d'échantillonnage. On mesure sur un panel stratifié pour pouvoir
+    # calculer la corrélation; on vend ensuite au segment de son choix. Les
+    # deux listes ne doivent jamais être confondues.
+    segment: str = ""
 
     @property
     def match_terms(self) -> tuple[str, ...]:
@@ -159,21 +178,33 @@ class Market:
     category_plural: str = ""
     services: list[str] = field(default_factory=list)
     constraints: list[str] = field(default_factory=list)
+    districts: list[str] = field(default_factory=list)
     economics: Economics | None = None
 
     def __post_init__(self) -> None:
         if not self.category_plural:
             self.category_plural = f"{self.category}s"
         clients = [e for e in self.entities if e.is_client]
-        if len(clients) != 1:
+        if len(clients) > 1:
             raise ValueError(
-                f"marché {self.id!r}: exactement une entité doit porter is_client=true "
-                f"({len(clients)} trouvée(s))"
+                f"marché {self.id!r}: au plus une entité peut porter is_client=true "
+                f"({len(clients)} trouvées)"
             )
 
     @property
+    def has_client(self) -> bool:
+        """Sans client, le marché est un panel de mesure et non un audit."""
+        return any(e.is_client for e in self.entities)
+
+    @property
     def client(self) -> Entity:
-        return next(e for e in self.entities if e.is_client)
+        client = next((e for e in self.entities if e.is_client), None)
+        if client is None:
+            raise ValueError(
+                f"marché {self.id!r}: panel sans client désigné. La ligne de base "
+                "se mesure en mode cohorte."
+            )
+        return client
 
     @property
     def competitors(self) -> list[Entity]:
@@ -193,6 +224,10 @@ class Market:
                 aliases=tuple(raw.get("aliases", ())),
                 domains=tuple(raw.get("domains", ())),
                 is_client=bool(raw.get("is_client", False)),
+                google_rank=(
+                    int(raw["google_rank"]) if raw.get("google_rank") is not None else None
+                ),
+                segment=raw.get("segment", ""),
                 strength=float(raw.get("strength", 0.5)),
             )
             for raw in data["entities"]
@@ -206,6 +241,7 @@ class Market:
             category_plural=data.get("category_plural", ""),
             services=list(data.get("services", ())),
             constraints=list(data.get("constraints", ())),
+            districts=list(data.get("districts", ())),
             economics=Economics.from_dict(data.get("economics")),
         )
 
@@ -230,6 +266,7 @@ class Market:
                 "zone": self.zone,
                 "services": sorted(self.services),
                 "constraints": sorted(self.constraints),
+                "districts": sorted(self.districts),
                 "entities": sorted(e.name for e in self.entities),
                 "templates": TEMPLATES,
                 "caps": FAMILY_CAPS,
@@ -245,13 +282,22 @@ class Market:
         for template in TEMPLATES[family]:
             if "{constraint}" in template:
                 out += [template.format(**base, constraint=c) for c in self.constraints]
+            elif "{district}" in template:
+                out += [template.format(**base, district=d) for d in self.districts]
             elif "{service}" in template:
                 out += [template.format(**base, service=s) for s in self.services]
             elif "{entity}" in template:
                 # On vérifie la marque du client et celle des concurrents les
                 # plus visibles: c'est là que se joue la réputation racontée
                 # par les moteurs.
-                names = [self.client.name] + [e.name for e in self.competitors[:2]]
+                # En audit, on teste la réputation du client et des deux
+                # concurrents les plus visibles. En panel, il n'y a pas de
+                # client: on prend les trois premières entités déclarées, ce
+                # qui reste déterministe.
+                if self.has_client:
+                    names = [self.client.name] + [e.name for e in self.competitors[:2]]
+                else:
+                    names = [e.name for e in self.entities[:3]]
                 out += [template.format(**base, entity=n) for n in names]
             else:
                 out.append(template.format(**base))

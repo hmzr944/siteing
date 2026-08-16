@@ -43,6 +43,31 @@ def _run(market: Market, specs: list[str], archive_dir: Path | None):
     return prompts, runs
 
 
+def _measure_cohort(args) -> int:
+    from .cohort import measure, to_text as cohort_text
+
+    market = Market.load(args.market)
+    if market.has_client:
+        print(
+            "attention: ce marché désigne un client. Une ligne de base se mesure "
+            "sur un panel sans client, sinon la mesure porte un biais de cadrage.",
+            file=sys.stderr,
+        )
+    prompts, runs = _run(market, args.provider or ["synthetic"], args.archive)
+    result = measure(market, prompts, runs)
+    print(cohort_text(result))
+
+    if args.out:
+        args.out.mkdir(parents=True, exist_ok=True)
+        path = args.out / f"{market.id}-ligne-de-base.json"
+        path.write_text(
+            json.dumps(result.to_dict(), ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        print(f"\nannexe : {path}")
+    return 0
+
+
 def _publish_dossier(args) -> int:
     from .creneau import Registry
     from .dossier import DECLARED, EXPIRED, REFUTED, VERIFIED, Dossier
@@ -102,6 +127,14 @@ def main(argv: list[str] | None = None) -> int:
     audit.add_argument("--out", type=Path, help="dossier de sortie (rapport HTML + JSON)")
     audit.add_argument("--archive", type=Path, help="dossier d'archivage des réponses brutes")
 
+    baseline = sub.add_parser(
+        "cohorte", help="mesure la ligne de base d'un panel d'entreprises"
+    )
+    baseline.add_argument("market")
+    baseline.add_argument("--provider", action="append", default=None, metavar="SPEC")
+    baseline.add_argument("--out", type=Path, help="dossier de sortie (JSON)")
+    baseline.add_argument("--archive", type=Path, help="dossier d'archivage des réponses")
+
     publish = sub.add_parser(
         "dossier", help="publie un Dossier de Vérité (page publique + sorties machine)"
     )
@@ -114,6 +147,9 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "dossier":
         return _publish_dossier(args)
+
+    if args.command == "cohorte":
+        return _measure_cohort(args)
 
     market = Market.load(args.market)
 

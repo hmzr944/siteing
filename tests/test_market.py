@@ -35,9 +35,18 @@ class TestBasket(unittest.TestCase):
         for family, count in counts.items():
             self.assertLessEqual(count, FAMILY_CAPS[family], family)
 
-    def test_all_families_are_represented(self):
+    def test_every_family_with_available_modifiers_is_represented(self):
+        """Une famille sans matière ne produit rien: le marché plombier n'a pas
+        de quartiers déclarés, donc pas de prompts hyperlocaux."""
         families = {p.family for p in self.market.basket()}
-        self.assertEqual(families, set(FAMILY_CAPS))
+        self.assertEqual(families, set(FAMILY_CAPS) - {"hyperlocal"})
+        self.assertEqual(self.market.districts, [])
+
+    def test_declaring_districts_activates_the_hyperlocal_family(self):
+        raw = load_raw()
+        raw["districts"] = ["Chartrons", "Caudéran"]
+        families = {p.family for p in Market.from_dict(raw).basket()}
+        self.assertIn("hyperlocal", families)
 
     def test_verification_prompts_name_the_client(self):
         verifications = [p for p in self.market.basket() if p.family == "verification"]
@@ -71,11 +80,16 @@ class TestBasketVersion(unittest.TestCase):
 
 
 class TestValidation(unittest.TestCase):
-    def test_rejects_market_without_client(self):
+    def test_market_without_client_is_a_measurement_panel(self):
+        """Zéro client n'est pas une erreur: c'est une cohorte de ligne de base.
+        Demander le client d'un panel, en revanche, en est une."""
         raw = load_raw()
         raw["entities"][0]["is_client"] = False
+        panel = Market.from_dict(raw)
+        self.assertFalse(panel.has_client)
+        self.assertEqual(len(panel.basket()), len(Market.load(FIXTURE).basket()))
         with self.assertRaises(ValueError):
-            Market.from_dict(raw)
+            _ = panel.client
 
     def test_rejects_market_with_two_clients(self):
         raw = load_raw()

@@ -209,14 +209,31 @@ class AuditResult:
         }
 
 
-def compute(
+@dataclass
+class Observed:
+    """Résultat brut d'un dépouillement, avant tout calcul de part."""
+
+    observations: list[Observation]
+    presence: dict[str, set[str]]      # prompt -> entités présentes
+    sourced: dict[str, int]            # entité -> fois citée comme source
+    usable_prompt_ids: set[str]
+    failed: int
+
+    @property
+    def usable(self) -> int:
+        return len(self.usable_prompt_ids)
+
+
+def observe(
     market: Market,
     prompts: list[Prompt],
     runs: list[tuple[str, str, list[EngineResponse]]],
-) -> AuditResult:
-    """Agrège des séries de réponses en un audit.
+) -> Observed:
+    """Dépouille les réponses en mentions datées, sans rien interpréter.
 
-    ``runs`` est une liste de ``(nom_du_provider, niveau_de_preuve, réponses)``.
+    Partagé par l'audit d'un client et la mesure d'un panel: le dépouillement
+    doit être strictement identique dans les deux cas, sinon une ligne de base
+    et un audit ne sont pas comparables.
     """
     context_terms = [market.category, market.category_plural, market.zone, *market.services]
     prompt_by_id = {p.id: p for p in prompts}
@@ -224,7 +241,6 @@ def compute(
     observations: list[Observation] = []
     failed = 0
     usable_prompt_ids: set[str] = set()
-    # prompt -> entités présentes (tous providers confondus)
     presence: dict[str, set[str]] = {p.id: set() for p in prompts}
     sourced: dict[str, int] = {e.id: 0 for e in market.entities}
 
@@ -255,10 +271,17 @@ def compute(
                 if mention.via == "domaine":
                     sourced[mention.entity_id] += 1
 
-    usable = len(usable_prompt_ids)
+    return Observed(observations, presence, sourced, usable_prompt_ids, failed)
+
+
+def score_entities(
+    market: Market, observed: Observed
+) -> list[EntityScore]:
+    """Classe les entités par part de citation, à partir d'un dépouillement."""
+    observations = observed.observations
+    usable = observed.usable
     total_value = sum(o.value for o in observations) or 1.0
 
-    # Valeur totale par famille, pour les parts de citation sectorielles.
     family_totals: dict[str, float] = {}
     for observation in observations:
         family_totals[observation.family] = (
@@ -268,13 +291,15 @@ def compute(
     scores: list[EntityScore] = []
     for entity in market.entities:
         own = [o for o in observations if o.entity_id == entity.id]
-        prompts_present = {pid for pid, ids in presence.items() if entity.id in ids}
+        prompts_present = {
+            pid for pid, ids in observed.presence.items() if entity.id in ids
+        }
         ranks = [o.rank for o in own]
-        by_family: dict[str, float] = {}
-        for family, family_total in family_totals.items():
-            family_value = sum(o.value for o in own if o.family == family)
-            by_family[family] = family_value / family_total if family_total else 0.0
-
+        by_family = {
+            family: (sum(o.value for o in own if o.family == family) / total)
+            for family, total in family_totals.items()
+            if total
+        }
         scores.append(
             EntityScore(
                 entity_id=entity.id,
@@ -284,12 +309,31 @@ def compute(
                 citation_share=sum(o.value for o in own) / total_value,
                 first_place_rate=(sum(1 for r in ranks if r == 1) / len(ranks)) if ranks else 0.0,
                 avg_rank=(sum(ranks) / len(ranks)) if ranks else None,
-                sourced_count=sourced[entity.id],
+                sourced_count=observed.sourced[entity.id],
                 by_family=by_family,
             )
         )
 
     scores.sort(key=lambda s: (-s.citation_share, -s.presence_rate, s.name))
+    return scores
+
+
+def compute(
+    market: Market,
+    prompts: list[Prompt],
+    runs: list[tuple[str, str, list[EngineResponse]]],
+) -> AuditResult:
+    """Agrège des séries de réponses en un audit.
+
+    ``runs`` est une liste de ``(nom_du_provider, niveau_de_preuve, réponses)``.
+    """
+    observed = observe(market, prompts, runs)
+    observations = observed.observations
+    presence = observed.presence
+    usable_prompt_ids = observed.usable_prompt_ids
+    failed = observed.failed
+    usable = observed.usable
+    scores = score_entities(market, observed)
 
     client = market.client
     blind_spots = [

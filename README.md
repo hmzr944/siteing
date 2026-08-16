@@ -129,3 +129,26 @@ défendue par le programme, pas par une consigne :
 statuts de vérification, les conflits de créneaux, le modèle économique, et les
 règles de conception de la Page de Vérité. Une règle de design non testée est une
 règle qui sera violée à la prochaine modification.
+
+## Ligne de base sur un marché
+
+Un audit mesure une entreprise contre ses concurrents. Une **cohorte** mesure un
+marché entier, sans client désigné, et répond à la question dont dépend la thèse
+du projet : **le rang Google prédit-il la citation par les moteurs de réponse ?**
+
+```bash
+python3 -m citation_audit cohorte markets/renovation-bordeaux.json \
+    --provider synthetic:11 --provider synthetic:23 --out out/
+```
+
+Le panel de mesure est **stratifié par rang Google** et n'est pas la liste de
+prospection. On mesure sur des strates pour pouvoir corréler ; on vend ensuite au
+segment de son choix. Confondre les deux listes détruit la mesure, parce qu'un
+échantillon choisi sur le rang Google ne peut plus rien dire du lien entre rang
+Google et citation.
+
+La corrélation est une corrélation de rangs (Spearman) avec sa valeur p : un
+coefficient sans seuil de signification sur vingt observations est une illusion
+d'optique. Le signe se lit avec attention, un bon rang Google étant *petit* et
+une bonne part de citation *grande* : rho négatif signifie « bien classé et bien
+cité ».
