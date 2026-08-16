@@ -1,0 +1,313 @@
+"""Les surfaces sont la porte de sortie de l'infrastructure.
+
+Deux invariants dominent tous les autres: aucune page sans fait, et aucun
+vocabulaire d'offre dans le structuré. Le premier protège de la pénalité pour
+contenu maigre, le second de la requalification d'un constat en proposition
+commerciale.
+"""
+
+import json
+import re
+import unittest
+from datetime import date
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+from noyau import MIN_CHANTIERS_TERRITOIRE, Noyau, Referentiel
+from surfaces import (
+    AI_CRAWLERS,
+    CROISEMENT,
+    FORBIDDEN_TERMS,
+    MIN_CHANTIERS_CROISEMENT,
+    ROOT,
+    TERRITOIRE,
+    build,
+    contains_offer_vocabulary,
+    for_node,
+    generate,
+    llms_txt,
+    markdown,
+    page,
+    robots,
+    sitemap,
+)
+from surfaces.render import budget_scope
+
+ROOT_DIR = Path(__file__).resolve().parent.parent
+TODAY = date(2026, 8, 16)
+BASE = "https://atelier-ferrand.fr"
+
+
+def core() -> Noyau:
+    return Noyau.load(
+        ROOT_DIR / "noyaux" / "atelier-ferrand.json",
+        Referentiel.load(ROOT_DIR / "referentiels" / "bordeaux.json"),
+    )
+
+
+def extract_jsonld(html: str) -> dict:
+    raw = re.search(r'<script type="application/ld\+json">(.*?)</script>', html, re.S)
+    payload = raw.group(1).replace("\\u003c", "<").replace("\\u003e", ">").replace("\\u0026", "&")
+    return json.loads(payload)
+
+
+class TestLattice(unittest.TestCase):
+    def setUp(self):
+        self.core = core()
+        self.nodes = build(self.core, TODAY)
+
+    def test_a_company_is_not_a_single_page(self):
+        """Une page unique concourt sur tout et perd contre les annuaires."""
+        self.assertGreater(len(self.nodes), 1)
+        self.assertEqual(sum(1 for n in self.nodes if n.kind == ROOT), 1)
+
+    def test_no_page_without_facts(self):
+        for node in self.nodes:
+            self.assertTrue(node.has_facts, node.slug)
+            if node.kind != ROOT:
+                self.assertTrue(node.chantiers, node.slug)
+
+    def test_territoire_pages_respect_the_district_threshold(self):
+        for node in self.nodes:
+            if node.kind == TERRITOIRE:
+                self.assertGreaterEqual(len(node.chantiers), MIN_CHANTIERS_TERRITOIRE)
+
+    def test_crossing_pages_need_a_repeated_pattern(self):
+        for node in self.nodes:
+            if node.kind == CROISEMENT:
+                self.assertGreaterEqual(len(node.chantiers), MIN_CHANTIERS_CROISEMENT)
+
+    def test_a_crossing_never_exists_without_its_district_page(self):
+        districts = {n.territoire.code for n in self.nodes if n.kind == TERRITOIRE}
+        for node in self.nodes:
+            if node.kind == CROISEMENT:
+                self.assertIn(node.territoire.code, districts)
+
+    def test_slugs_are_unique(self):
+        slugs = [n.slug for n in self.nodes]
+        self.assertEqual(len(slugs), len(set(slugs)))
+
+    def test_every_page_answers_a_real_buying_question(self):
+        for node in self.nodes:
+            self.assertTrue(node.question.endswith("?"), node.slug)
+
+    def test_a_single_chantier_district_gets_no_page(self):
+        singles = {
+            p.territoire.code
+            for p in self.core.territoires(TODAY)
+            if p.territoire.level == "quartier" and p.count == 1
+        }
+        self.assertTrue(singles)
+        produced = {n.territoire.code for n in self.nodes if n.territoire}
+        self.assertEqual(singles & produced, set())
+
+
+class TestJsonLd(unittest.TestCase):
+    def setUp(self):
+        self.core = core()
+        self.nodes = build(self.core, TODAY)
+
+    def test_no_offer_vocabulary_anywhere(self):
+        """L'interdit central: publier un constat, jamais une proposition."""
+        for node in self.nodes:
+            found = contains_offer_vocabulary(for_node(self.core, node, TODAY))
+            self.assertEqual(found, [], f"{node.slug}: {found}")
+
+    def test_the_detector_actually_detects(self):
+        """Un garde-fou qui ne détecte rien ne garde rien."""
+        for term in FORBIDDEN_TERMS:
+            self.assertTrue(contains_offer_vocabulary({"a": {term: 1}}), term)
+        self.assertTrue(contains_offer_vocabulary({"@type": "Offer"}))
+        self.assertEqual(contains_offer_vocabulary({"@type": "Service"}), [])
+
+    def test_budget_is_published_as_a_measurement(self):
+        node = next(n for n in self.nodes if n.budget is not None)
+        document = for_node(self.core, node, TODAY)
+        prop = next(
+            p for p in document["additionalProperty"]
+            if p["name"].startswith("Budget")
+        )
+        self.assertEqual(prop["value"]["@type"], "QuantitativeValue")
+        self.assertIn("measurementTechnique", prop)
+        self.assertIn("sans engagement", prop["measurementTechnique"])
+
+    def test_root_document_is_a_business_with_served_areas(self):
+        root = next(n for n in self.nodes if n.kind == ROOT)
+        document = for_node(self.core, root, TODAY)
+        self.assertEqual(document["@type"], "HomeAndConstructionBusiness")
+        self.assertTrue(document["areaServed"])
+        self.assertEqual(document["identifier"]["propertyID"], "SIREN")
+
+    def test_expired_credential_is_absent_from_structured_data(self):
+        root = next(n for n in self.nodes if n.kind == ROOT)
+        serialised = json.dumps(for_node(self.core, root, TODAY), ensure_ascii=False)
+        self.assertIn("Qualibat 7131", serialised)
+        self.assertNotIn("décennale", serialised.lower())
+
+    def test_chantiers_are_dated_and_located(self):
+        node = next(n for n in self.nodes if n.kind == CROISEMENT)
+        works = for_node(self.core, node, TODAY)["workExample"]
+        for work in works:
+            self.assertEqual(work["@type"], "CreativeWork")
+            self.assertTrue(work["dateCreated"])
+            self.assertTrue(work["locationCreated"]["name"])
+
+
+class TestBudgetScope(unittest.TestCase):
+    """Une page de quartier qui liste 3 chantiers et annonce un budget « sur 6 »
+    se contredit à l'œil nu. La portée doit être écrite, jamais déduite."""
+
+    def setUp(self):
+        self.core = core()
+        self.nodes = build(self.core, TODAY)
+
+    def test_scope_is_stated_when_it_differs_from_the_page(self):
+        node = next(
+            n for n in self.nodes if n.budget is not None and n.kind == CROISEMENT
+        )
+        total, local = budget_scope(node)
+        self.assertGreater(total, local, "la fixture doit exercer ce cas")
+        rendered = page(self.core, node, self.nodes, TODAY)
+        self.assertIn("tous secteurs confondus", rendered)
+        self.assertIn(f"dont {local}", rendered)
+
+    def test_scope_note_reaches_markdown_and_structured_data(self):
+        node = next(
+            n for n in self.nodes if n.budget is not None and n.kind == CROISEMENT
+        )
+        self.assertIn("tous secteurs confondus", markdown(self.core, node, TODAY))
+        document = for_node(self.core, node, TODAY)
+        prop = next(
+            p for p in document["additionalProperty"] if p["name"].startswith("Budget")
+        )
+        self.assertIn("tous secteurs confondus", prop["measurementTechnique"])
+
+
+class TestRender(unittest.TestCase):
+    def setUp(self):
+        self.core = core()
+        self.nodes = build(self.core, TODAY)
+        self.pages = {n.slug: page(self.core, n, self.nodes, TODAY) for n in self.nodes}
+
+    def test_facts_appear_in_visible_text_and_in_structured_data(self):
+        """Un fait présent uniquement dans le JSON-LD est deux fois plus faible."""
+        node = next(n for n in self.nodes if n.budget is not None)
+        rendered = self.pages[node.slug]
+        text = re.sub(r"<script.*?</script>", "", rendered, flags=re.S)
+        text = re.sub(r"<[^>]+>", " ", text)
+        self.assertIn("11 550", text.replace(" ", " ").replace("\xa0", " "))
+        self.assertIn("11550", json.dumps(extract_jsonld(rendered)))
+
+    def test_pages_carry_no_script_beyond_structured_data(self):
+        for slug, rendered in self.pages.items():
+            self.assertEqual(rendered.count("<script"), 1, slug)
+            self.assertIn('type="application/ld+json"', rendered)
+
+    def test_pages_load_no_remote_resource(self):
+        for slug, rendered in self.pages.items():
+            self.assertNotIn("http://", rendered.replace("http://www.sitemaps.org", ""))
+            self.assertNotIn("<link", rendered)
+            self.assertNotIn("<img", rendered)
+
+    def test_structured_data_cannot_escape_its_block(self):
+        rendered = self.pages[next(iter(self.pages))]
+        block = re.search(r"<script.*?</script>", rendered, re.S).group(0)
+        self.assertEqual(block.count("<script"), 1)
+        self.assertNotIn("</script><", block[:-9])
+
+    def test_every_page_states_the_budget_is_not_an_offer(self):
+        for node in self.nodes:
+            if node.budget is not None:
+                self.assertIn("ni d'une offre", self.pages[node.slug])
+
+    def test_pages_are_valid_standalone_documents(self):
+        for slug, rendered in self.pages.items():
+            self.assertTrue(rendered.startswith("<!doctype html>"), slug)
+            self.assertEqual(rendered.count("<title>"), 1, slug)
+            self.assertIn('lang="fr"', rendered)
+            self.assertIn("</html>", rendered)
+
+    def test_internal_links_point_to_produced_pages(self):
+        produced = {n.path for n in self.nodes}
+        for slug, rendered in self.pages.items():
+            for href in re.findall(r'href="([^"]+)"', rendered):
+                self.assertIn(href, produced, f"{slug} pointe vers {href}")
+
+
+class TestSiteFiles(unittest.TestCase):
+    def setUp(self):
+        self.core = core()
+        self.nodes = build(self.core, TODAY)
+
+    def test_robots_allows_every_ai_crawler_by_default(self):
+        text = robots(BASE)
+        for name in AI_CRAWLERS:
+            self.assertIn(f"User-agent: {name}", text)
+        self.assertNotIn("Disallow: /", text)
+        self.assertIn(f"Sitemap: {BASE}/sitemap.xml", text)
+
+    def test_a_crawler_can_be_refused_explicitly(self):
+        text = robots(BASE, allow={"CCBot": False})
+        block = text.split("User-agent: CCBot")[1].splitlines()[1]
+        self.assertEqual(block.strip(), "Disallow: /")
+
+    def test_robots_states_what_allowing_a_crawler_implies(self):
+        """Autoriser un robot d'entraînement est une décision du client."""
+        self.assertIn("entraîner un modèle", robots(BASE))
+
+    def test_sitemap_lastmod_comes_from_the_facts_not_the_clock(self):
+        """Un fichier régénéré sans nouveau fait n'est pas une page modifiée."""
+        xml = sitemap(BASE, self.nodes, TODAY)
+        self.assertNotIn(f"<lastmod>{TODAY.isoformat()}</lastmod>", xml)
+        for node in self.nodes:
+            self.assertIn(f"<lastmod>{node.latest.isoformat()}</lastmod>", xml)
+
+    def test_sitemap_lists_every_page_once(self):
+        xml = sitemap(BASE, self.nodes, TODAY)
+        self.assertEqual(xml.count("<url>"), len(self.nodes))
+
+    def test_llms_txt_points_to_markdown_mirrors(self):
+        text = llms_txt(self.core, BASE, self.nodes)
+        for node in self.nodes:
+            self.assertIn(node.path.replace(".html", ".md"), text)
+        self.assertIn("ni un tarif, ni une offre", text)
+
+    def test_markdown_mirror_carries_the_same_facts(self):
+        node = next(n for n in self.nodes if n.budget is not None)
+        text = markdown(self.core, node, TODAY)
+        self.assertIn("Budget médian constaté", text)
+        self.assertIn("Chantiers", text)
+        self.assertNotIn("<", text)
+
+
+class TestGenerate(unittest.TestCase):
+    def test_full_site_is_written_and_self_consistent(self):
+        with TemporaryDirectory() as tmp:
+            report = generate(core(), BASE, tmp, TODAY)
+            directory = Path(tmp)
+
+            for name in ("robots.txt", "sitemap.xml", "llms.txt", "surfaces.json"):
+                self.assertTrue((directory / name).exists(), name)
+
+            for detail in report["pages_detail"]:
+                html_file = directory / detail["path"]
+                markdown_file = directory / detail["path"].replace(".html", ".md")
+                self.assertTrue(html_file.exists(), detail["path"])
+                self.assertTrue(markdown_file.exists())
+                self.assertGreater(html_file.stat().st_size, 500)
+
+            listed = {
+                re.sub(rf"^{re.escape(BASE)}/", "", loc)
+                for loc in re.findall(r"<loc>([^<]+)</loc>", (directory / "sitemap.xml").read_text())
+            }
+            self.assertEqual(listed, {d["path"] for d in report["pages_detail"]})
+
+    def test_report_counts_match_the_lattice(self):
+        with TemporaryDirectory() as tmp:
+            report = generate(core(), BASE, tmp, TODAY)
+        self.assertEqual(report["pages"], len(build(core(), TODAY)))
+        self.assertEqual(len(report["pages_detail"]), report["pages"])
+
+
+if __name__ == "__main__":
+    unittest.main()
