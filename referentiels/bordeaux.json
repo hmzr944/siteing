@@ -1,0 +1,20 @@
+{
+  "_note": "Référentiel géographique de Bordeaux Métropole, réduit aux quartiers et communes du terrain de départ. Les alias couvrent les formes réellement saisies ou dictées.",
+  "territoires": [
+    { "code": "bdx-metropole", "name": "Bordeaux Métropole", "level": "metropole", "aliases": ["la métropole", "CUB", "Bordeaux Métropole"] },
+
+    { "code": "bordeaux", "name": "Bordeaux", "level": "commune", "parent": "bdx-metropole" },
+    { "code": "talence", "name": "Talence", "level": "commune", "parent": "bdx-metropole" },
+    { "code": "le-bouscat", "name": "Le Bouscat", "level": "commune", "parent": "bdx-metropole", "aliases": ["Bouscat"] },
+    { "code": "begles", "name": "Bègles", "level": "commune", "parent": "bdx-metropole" },
+
+    { "code": "chartrons", "name": "les Chartrons", "level": "quartier", "parent": "bordeaux", "aliases": ["Chartrons", "quartier des Chartrons", "Bordeaux Chartrons"] },
+    { "code": "cauderan", "name": "Caudéran", "level": "quartier", "parent": "bordeaux", "aliases": ["Bordeaux Caudéran"] },
+    { "code": "saint-michel", "name": "Saint-Michel", "level": "quartier", "parent": "bordeaux", "aliases": ["quartier Saint-Michel", "Capucins Saint-Michel"] },
+    { "code": "nansouty", "name": "Nansouty", "level": "quartier", "parent": "bordeaux", "aliases": ["Nansouty Saint-Genès"] },
+    { "code": "la-bastide", "name": "la Bastide", "level": "quartier", "parent": "bordeaux", "aliases": ["Bastide", "rive droite"] },
+    { "code": "bacalan", "name": "Bacalan", "level": "quartier", "parent": "bordeaux", "aliases": ["Bassins à flot", "Bassins a flot"] },
+    { "code": "saint-augustin", "name": "Saint-Augustin", "level": "quartier", "parent": "bordeaux" },
+    { "code": "saint-genes", "name": "Saint-Genès", "level": "quartier", "parent": "bordeaux" }
+  ]
+}
