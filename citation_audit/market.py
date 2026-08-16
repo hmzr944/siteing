@@ -15,6 +15,7 @@ from __future__ import annotations
 import hashlib
 import json
 import unicodedata
+from datetime import date
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -121,6 +122,14 @@ class Entity:
     # calculer la corrélation; on vend ensuite au segment de son choix. Les
     # deux listes ne doivent jamais être confondues.
     segment: str = ""
+    # Date à laquelle des surfaces ont été publiées pour cette entreprise.
+    # C'est ce qui partage le panel entre traités et témoins, et donc ce qui
+    # rend un avant/après interprétable: sans témoins, une hausse de citation
+    # ne se distingue pas d'un changement de modèle chez l'éditeur.
+    treated_since: date | None = None
+
+    def is_treated(self, on: date) -> bool:
+        return self.treated_since is not None and self.treated_since <= on
 
     @property
     def match_terms(self) -> tuple[str, ...]:
@@ -143,6 +152,11 @@ class Economics:
     # elle vaut 1/n (part équitable entre les entités suivies) — l'hypothèse la
     # plus neutre, et la plus difficile à contester.
     fair_share: float | None = None
+    # Nombre d'affaires supplémentaires que l'entreprise peut réellement
+    # absorber par mois. Sans ce plafond, toute valorisation d'un gain de
+    # visibilité finit par supposer une entreprise à capacité infinie, ce qui
+    # produit des chiffres flatteurs et faux.
+    max_monthly_deals: float | None = None
 
     @classmethod
     def from_dict(cls, data: dict | None) -> "Economics | None":
@@ -154,6 +168,11 @@ class Economics:
             avg_deal_value=float(data["avg_deal_value"]),
             close_rate=float(data["close_rate"]),
             fair_share=float(raw_share) if raw_share is not None else None,
+            max_monthly_deals=(
+                float(data["max_monthly_deals"])
+                if data.get("max_monthly_deals") is not None
+                else None
+            ),
         )
 
 
@@ -228,6 +247,11 @@ class Market:
                     int(raw["google_rank"]) if raw.get("google_rank") is not None else None
                 ),
                 segment=raw.get("segment", ""),
+                treated_since=(
+                    date.fromisoformat(raw["treated_since"])
+                    if raw.get("treated_since")
+                    else None
+                ),
                 strength=float(raw.get("strength", 0.5)),
             )
             for raw in data["entities"]

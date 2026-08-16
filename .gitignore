@@ -13,3 +13,6 @@ archives/
 
 # Registre des créneaux: état d'exploitation, pas du code.
 registre/
+
+# Vagues de mesure: archives d'exploitation, régénérables.
+vagues/
