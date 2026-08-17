@@ -68,6 +68,57 @@ def _measure_cohort(args) -> int:
     return 0
 
 
+def _capture_wave(args) -> int:
+    from datetime import date
+
+    from .evolution import capture
+
+    market = Market.load(args.market)
+    prompts, runs = _run(market, args.provider or ["synthetic"], args.archive)
+    moment = date.fromisoformat(args.date) if args.date else date.today()
+    wave = capture(market, prompts, runs, observed_on=moment, label=args.label)
+
+    path = args.out / f"{market.id}-{moment.isoformat()}.json"
+    wave.save(path)
+    print(
+        f"VAGUE {args.label or moment.isoformat()} — {market.label}\n"
+        f"{wave.prompt_count} prompts exploitables · {len(wave.entity_ids)} entités\n"
+        f"panier {wave.basket_version} · moteurs {', '.join(wave.providers)} · "
+        f"preuve {wave.evidence}\n\narchivée : {path}"
+    )
+    return 0
+
+
+def _compare_waves(args) -> int:
+    from .evolution import Incomparable, Wave, client_report, compare, to_text
+
+    market = Market.load(args.market)
+    before, after = Wave.load(args.avant), Wave.load(args.apres)
+    try:
+        comparison = compare(market, before, after)
+    except Incomparable as exc:
+        print(f"comparaison impossible : {exc}", file=sys.stderr)
+        return 2
+
+    print(to_text(comparison, market))
+    if args.client:
+        print("\n" + "=" * 72 + "\n")
+        print(client_report(comparison, market, args.client))
+
+    if args.out:
+        args.out.mkdir(parents=True, exist_ok=True)
+        path = (
+            args.out
+            / f"{market.id}-{before.observed_on}-{after.observed_on}.json"
+        )
+        path.write_text(
+            json.dumps(comparison.to_dict(), ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        print(f"\nannexe : {path}")
+    return 0
+
+
 def _publish_dossier(args) -> int:
     from .creneau import Registry
     from .dossier import DECLARED, EXPIRED, REFUTED, VERIFIED, Dossier
@@ -135,6 +186,23 @@ def main(argv: list[str] | None = None) -> int:
     baseline.add_argument("--out", type=Path, help="dossier de sortie (JSON)")
     baseline.add_argument("--archive", type=Path, help="dossier d'archivage des réponses")
 
+    wave = sub.add_parser("vague", help="capture une vague datée et l'archive")
+    wave.add_argument("market")
+    wave.add_argument("--provider", action="append", default=None, metavar="SPEC")
+    wave.add_argument("--date", help="date du relevé (AAAA-MM-JJ)")
+    wave.add_argument("--label", default="", help="libellé de la vague, ex. J30")
+    wave.add_argument("--out", type=Path, default=Path("vagues"))
+    wave.add_argument("--archive", type=Path, help="archivage des réponses brutes")
+
+    evo = sub.add_parser(
+        "evolution", help="compare deux vagues archivées, avec groupe témoin"
+    )
+    evo.add_argument("market")
+    evo.add_argument("--avant", required=True, type=Path)
+    evo.add_argument("--apres", required=True, type=Path)
+    evo.add_argument("--client", help="produit en plus le rapport mensuel de cette entité")
+    evo.add_argument("--out", type=Path, help="dossier de sortie (JSON)")
+
     publish = sub.add_parser(
         "dossier", help="publie un Dossier de Vérité (page publique + sorties machine)"
     )
@@ -150,6 +218,12 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "cohorte":
         return _measure_cohort(args)
+
+    if args.command == "vague":
+        return _capture_wave(args)
+
+    if args.command == "evolution":
+        return _compare_waves(args)
 
     market = Market.load(args.market)
 

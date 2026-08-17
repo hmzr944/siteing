@@ -1,20 +1,138 @@
 {
-  "_note": "Référentiel géographique de Bordeaux Métropole, réduit aux quartiers et communes du terrain de départ. Les alias couvrent les formes réellement saisies ou dictées.",
+  "_note": "Référentiel géographique de Bordeaux Métropole, réduit aux quartiers et communes du terrain de départ. Les alias couvrent les formes réellement saisies ou dictées. Les voies figurent en alias du quartier qui les contient: une adresse de rue est ce qu'un dirigeant dicte, et c'est au référentiel de la rattacher, jamais au modèle de langue.",
   "territoires": [
-    { "code": "bdx-metropole", "name": "Bordeaux Métropole", "level": "metropole", "aliases": ["la métropole", "CUB", "Bordeaux Métropole"] },
-
-    { "code": "bordeaux", "name": "Bordeaux", "level": "commune", "parent": "bdx-metropole" },
-    { "code": "talence", "name": "Talence", "level": "commune", "parent": "bdx-metropole" },
-    { "code": "le-bouscat", "name": "Le Bouscat", "level": "commune", "parent": "bdx-metropole", "aliases": ["Bouscat"] },
-    { "code": "begles", "name": "Bègles", "level": "commune", "parent": "bdx-metropole" },
-
-    { "code": "chartrons", "name": "les Chartrons", "level": "quartier", "parent": "bordeaux", "aliases": ["Chartrons", "quartier des Chartrons", "Bordeaux Chartrons"] },
-    { "code": "cauderan", "name": "Caudéran", "level": "quartier", "parent": "bordeaux", "aliases": ["Bordeaux Caudéran"] },
-    { "code": "saint-michel", "name": "Saint-Michel", "level": "quartier", "parent": "bordeaux", "aliases": ["quartier Saint-Michel", "Capucins Saint-Michel"] },
-    { "code": "nansouty", "name": "Nansouty", "level": "quartier", "parent": "bordeaux", "aliases": ["Nansouty Saint-Genès"] },
-    { "code": "la-bastide", "name": "la Bastide", "level": "quartier", "parent": "bordeaux", "aliases": ["Bastide", "rive droite"] },
-    { "code": "bacalan", "name": "Bacalan", "level": "quartier", "parent": "bordeaux", "aliases": ["Bassins à flot", "Bassins a flot"] },
-    { "code": "saint-augustin", "name": "Saint-Augustin", "level": "quartier", "parent": "bordeaux" },
-    { "code": "saint-genes", "name": "Saint-Genès", "level": "quartier", "parent": "bordeaux" }
+    {
+      "code": "bdx-metropole",
+      "name": "Bordeaux Métropole",
+      "level": "metropole",
+      "aliases": [
+        "la métropole",
+        "CUB",
+        "Bordeaux Métropole"
+      ]
+    },
+    {
+      "code": "bordeaux",
+      "name": "Bordeaux",
+      "level": "commune",
+      "parent": "bdx-metropole"
+    },
+    {
+      "code": "talence",
+      "name": "Talence",
+      "level": "commune",
+      "parent": "bdx-metropole"
+    },
+    {
+      "code": "le-bouscat",
+      "name": "Le Bouscat",
+      "level": "commune",
+      "parent": "bdx-metropole",
+      "aliases": [
+        "Bouscat"
+      ]
+    },
+    {
+      "code": "begles",
+      "name": "Bègles",
+      "level": "commune",
+      "parent": "bdx-metropole"
+    },
+    {
+      "code": "chartrons",
+      "name": "les Chartrons",
+      "level": "quartier",
+      "parent": "bordeaux",
+      "aliases": [
+        "Chartrons",
+        "quartier des Chartrons",
+        "Bordeaux Chartrons",
+        "rue Notre-Dame",
+        "cours du Médoc",
+        "quai des Chartrons",
+        "rue Rode"
+      ]
+    },
+    {
+      "code": "cauderan",
+      "name": "Caudéran",
+      "level": "quartier",
+      "parent": "bordeaux",
+      "aliases": [
+        "Bordeaux Caudéran",
+        "avenue de la Libération",
+        "rue Pasteur Caudéran",
+        "place de l'Église Caudéran"
+      ]
+    },
+    {
+      "code": "saint-michel",
+      "name": "Saint-Michel",
+      "level": "quartier",
+      "parent": "bordeaux",
+      "aliases": [
+        "quartier Saint-Michel",
+        "Capucins Saint-Michel",
+        "place Saint-Michel",
+        "rue des Faures",
+        "cours de la Marne"
+      ]
+    },
+    {
+      "code": "nansouty",
+      "name": "Nansouty",
+      "level": "quartier",
+      "parent": "bordeaux",
+      "aliases": [
+        "Nansouty Saint-Genès",
+        "rue de Bègles",
+        "place Nansouty"
+      ]
+    },
+    {
+      "code": "la-bastide",
+      "name": "la Bastide",
+      "level": "quartier",
+      "parent": "bordeaux",
+      "aliases": [
+        "Bastide",
+        "rive droite",
+        "quai de Queyries",
+        "avenue Thiers",
+        "rue de Nuits"
+      ]
+    },
+    {
+      "code": "bacalan",
+      "name": "Bacalan",
+      "level": "quartier",
+      "parent": "bordeaux",
+      "aliases": [
+        "Bassins à flot",
+        "Bassins a flot",
+        "rue Achard",
+        "quai de Bacalan"
+      ]
+    },
+    {
+      "code": "saint-augustin",
+      "name": "Saint-Augustin",
+      "level": "quartier",
+      "parent": "bordeaux",
+      "aliases": [
+        "place de l'Église Saint-Augustin",
+        "rue Croix de Seguey"
+      ]
+    },
+    {
+      "code": "saint-genes",
+      "name": "Saint-Genès",
+      "level": "quartier",
+      "parent": "bordeaux",
+      "aliases": [
+        "rue de Saint-Genès",
+        "place Amélie Raba"
+      ]
+    }
   ]
 }
