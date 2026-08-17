@@ -13,6 +13,19 @@ Rien n'est jamais écrit directement dans le Noyau: on produit un candidat, avec
 la provenance de chaque champ et la phrase d'origine.
 """
 
+from .dialogue import (
+    ASK,
+    PENDING_TTL_DAYS,
+    PIECE_RECEIVED,
+    REGISTERED,
+    UNCLEAR,
+    Conversation,
+    Dialogue,
+    Reply,
+    find_piece_reference,
+    looks_like_new_event,
+    resolve_field,
+)
 from .extracteurs import (
     HeuristicExtractor,
     LLMExtractor,
@@ -39,7 +52,18 @@ from .lexique import (
 )
 
 __all__ = [
+    "ASK",
     "BLOCKING",
+    "Conversation",
+    "Dialogue",
+    "PENDING_TTL_DAYS",
+    "PIECE_RECEIVED",
+    "REGISTERED",
+    "Reply",
+    "UNCLEAR",
+    "find_piece_reference",
+    "looks_like_new_event",
+    "resolve_field",
     "Candidate",
     "FIELD_PRIORITY",
     "HeuristicExtractor",

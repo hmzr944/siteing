@@ -82,16 +82,21 @@ def _to_float(raw: str) -> float | None:
         return None
 
 
-def parse_montant(text: str) -> Resolved:
+def parse_montant(text: str, money_context: bool = False) -> Resolved:
     """Montant en euros, à partir d'une formulation parlée.
 
     Le cas piégeux est propre au métier: « 12 plaques » vaut douze mille euros
     dans la bouche d'un patron qui parle de son chiffre, et douze plaques de
     plâtre dans celle du même patron qui parle de son chantier. Sans marqueur
     monétaire dans la phrase, on refuse et on pose la question.
+
+    ``money_context`` est ce que le dialogue apporte. Quand le système vient de
+    demander « le chantier a été facturé combien ? », la réponse « 12 plaques »
+    n'est plus ambiguë: le contexte monétaire est fourni par la question. Le
+    dialogue ne sert donc pas seulement à collecter, il désambiguïse.
     """
     lowered = plain(text)
-    has_marker = any(m in lowered for m in MONEY_MARKERS)
+    has_marker = money_context or any(m in lowered for m in MONEY_MARKERS)
 
     # Nombre suivi d'une unité d'argot ou de « euros ».
     match = re.search(rf"{_NUM}\s*(plaques?|briques?|k|keuros?|bars?|euros?|€)\b", lowered)

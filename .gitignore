@@ -16,3 +16,6 @@ registre/
 
 # Vagues de mesure: archives d'exploitation, régénérables.
 vagues/
+
+# État des fils de dialogue: exploitation, pas code.
+conversations/

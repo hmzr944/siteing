@@ -142,3 +142,86 @@ d'échec réseau.
 3. **Les pièces.** Passer un chantier de `vocal` à `facture` suppose de recevoir
    et contrôler la pièce. C'est le maillon qui débloque les budgets, et c'est le
    prochain goulot.
+
+---
+
+## 9. La boucle de dialogue
+
+```bash
+python3 tools/demo_dialogue.py
+```
+
+### Ce que le dialogue apporte de plus que la collecte : il désambiguïse
+
+C'est la meilleure trouvaille de cette étape. « 12 plaques » seul est **refusé**,
+parce qu'une plaque est aussi une plaque de plâtre. Mais en réponse à la question
+*« le chantier a été facturé combien ? »*, c'est un montant : **la question a
+établi le contexte monétaire.**
+
+```python
+parse_montant("12 plaques")                        # refus
+resolve_field("budget_eur", "12 plaques", …)       # 12 000 €
+```
+
+Le dialogue ne sert donc pas seulement à remplir des trous. Il fournit au
+résolveur le contexte que le message isolé n'avait pas.
+
+### Le routage, par densité d'information
+
+Un message entrant est-il une réponse, ou un nouveau chantier ? La règle qui
+marche n'est pas une liste de tournures, c'est de **compter les faits
+indépendants** que le message porte à lui seul :
+
+- **un seul fait** → c'est une réponse à la question en cours ;
+- **deux ou plus** → c'est une nouvelle entrée.
+
+Sans ce test, *« j'ai livré la cuisine place Nansouty, 14 m2, ça a coûté 22
+plaques »* se faisait absorber comme simple réponse au chantier précédent, et
+**les deux chantiers fusionnaient**. C'était le bug le plus grave de la première
+version.
+
+### Rien ne se perd
+
+Quand une nouvelle entrée interrompt une question sans réponse, le candidat
+précédent est **garé** avec tout ce qui avait déjà été résolu pour lui, et il
+remonte au plan de travail. Un chantier annoncé puis abandonné en cours de
+conversation ne disparaît jamais.
+
+### Trois pièges de la machine à états, et leurs garde-fous
+
+**Le candidat fantôme.** Le résolveur de date rend *toujours* une valeur, le jour
+de l'énoncé par défaut. Sans précaution, « ok merci » créait donc un chantier
+avec une date et rien d'autre. Un candidat dont le seul champ est une date déduite
+ne porte aucune information : il est écarté.
+
+**L'amendement.** « 6 m2 » envoyé juste après un enregistrement ne signale pas un
+nouveau chantier, c'est une précision sur celui qu'on vient d'enregistrer. Idem
+pour une date : mais une date **énoncée** corrige une date **déduite**, et une
+date déduite ne corrige rien, sinon n'importe quel message passerait pour une
+correction.
+
+**La péremption.** Une question sans réponse depuis plus de sept jours ne peut
+plus être répondue : « salle de bain » hors contexte ne désigne plus rien. Le
+candidat est garé et la conversation repart.
+
+### Le pont vers la pièce justificative
+
+C'est le canal de collecte. À l'enregistrement :
+
+> C'est enregistré : Rénovation de salle de bain, aux Chartrons, 12 000 €, 4 jours.
+> Pour que son budget soit publié et compte dans votre visibilité, il me faut la
+> facture. Envoyez-la ici, une photo suffit.
+
+Puis, à la réception d'une référence :
+
+> Facture F2026-118 rattachée au chantier. Son budget entre maintenant dans vos
+> budgets constatés.
+
+La référence n'est reconnue que si le message porte un indice de pièce
+(« facture », « devis ») : un numéro nu ne suffit pas. Et tant que la pièce
+manque, le chantier apparaît au plan de travail avec sa conséquence exacte : *il
+prouve une intervention mais n'entre dans aucun budget publié.*
+
+**Limite assumée** : recevoir une facture référencée rend le chantier
+« documenté » au sens du Noyau. Le contrôle du montant *contre* la pièce reste un
+travail distinct, non construit.
