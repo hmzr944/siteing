@@ -628,6 +628,72 @@ def to_text(comparison: Comparison, market: Market) -> str:
     return "\n".join(lines)
 
 
+# -- suivi descriptif (sans témoin) --------------------------------------------
+
+
+@dataclass(frozen=True)
+class TrackPoint:
+    """Un point de mesure pour une entreprise, sans jugement causal.
+
+    Utile pour un « Audit J0 → J7 → J30 » sur une seule entreprise, avant
+    qu'un groupe témoin existe ou soit pertinent (par exemple lors des dix
+    entretiens du protocole de validation terrain: on montre une progression,
+    pas une preuve).
+    """
+
+    label: str
+    observed_on: date
+    presence_rate: float
+    citation_share: float
+    blind_spot_count: int
+    evidence: str
+
+
+def track(waves: list[Wave], entity_id: str) -> list[TrackPoint]:
+    """Progression d'une entité à travers une suite de vagues, triée par date.
+
+    **Ceci n'est pas `compare()`.** Il n'y a ni groupe témoin, ni intervalle de
+    confiance, ni verdict établi/sous le bruit. Une hausse ici peut venir de la
+    publication comme de n'importe quoi d'autre. C'est un relevé descriptif,
+    pas une estimation causale — utile pour montrer une trajectoire en
+    entretien, jamais pour l'affirmer comme un effet.
+    """
+    ordered = sorted(waves, key=lambda w: w.observed_on)
+    points: list[TrackPoint] = []
+    for wave in ordered:
+        table = wave.value_by_prompt()
+        blind_spots = sum(
+            1 for pid in wave.usable_prompt_ids if entity_id not in table.get(pid, {})
+        )
+        points.append(
+            TrackPoint(
+                label=wave.label or wave.observed_on.isoformat(),
+                observed_on=wave.observed_on,
+                presence_rate=wave.presence(entity_id),
+                citation_share=wave.share(entity_id),
+                blind_spot_count=blind_spots,
+                evidence=wave.evidence,
+            )
+        )
+    return points
+
+
+def track_to_text(points: list[TrackPoint], entity_name: str) -> str:
+    lines = [
+        f"SUIVI — {entity_name}",
+        "(progression descriptive, sans groupe témoin : ne prouve aucune "
+        "causalité)",
+        "",
+    ]
+    for point in points:
+        lines.append(
+            f"  {point.observed_on}  {point.label:<10} présence "
+            f"{_pct(point.presence_rate):>6}  part {_pct(point.citation_share):>6}  "
+            f"{point.blind_spot_count} angle(s) mort(s)  preuve {point.evidence}"
+        )
+    return "\n".join(lines)
+
+
 def client_report(comparison: Comparison, market: Market, entity_id: str) -> str:
     """Le rapport mensuel remis au dirigeant.
 

@@ -119,6 +119,74 @@ def _compare_waves(args) -> int:
     return 0
 
 
+def _track_entity(args) -> int:
+    from .evolution import Wave, track, track_to_text
+
+    market = Market.load(args.market)
+    entity = market.entity(args.client)
+    waves = [Wave.load(p) for p in args.vagues]
+    points = track(waves, entity.id)
+    print(track_to_text(points, entity.name))
+
+    if args.out:
+        args.out.mkdir(parents=True, exist_ok=True)
+        path = args.out / f"{market.id}-{entity.id}-suivi.json"
+        path.write_text(
+            json.dumps(
+                [
+                    {
+                        "label": p.label,
+                        "observed_on": p.observed_on.isoformat(),
+                        "presence_rate": round(p.presence_rate, 4),
+                        "citation_share": round(p.citation_share, 4),
+                        "blind_spot_count": p.blind_spot_count,
+                        "evidence": p.evidence,
+                    }
+                    for p in points
+                ],
+                ensure_ascii=False,
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        print(f"\nannexe : {path}")
+    return 0
+
+
+def _scaffold_market(args) -> int:
+    from .market import scaffold
+
+    market = scaffold(
+        client_name=args.client,
+        category=args.categorie,
+        zone=args.zone,
+        competitors=args.concurrent or [],
+        client_domain=args.client_domain or "",
+        market_id=args.id or "",
+    )
+    payload = {
+        "id": market.id,
+        "label": market.label,
+        "category": market.category,
+        "zone": market.zone,
+        "entities": [
+            {
+                "name": e.name,
+                "is_client": e.is_client,
+                "domains": list(e.domains),
+            }
+            for e in market.entities
+        ],
+    }
+    text = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
+    out_path = args.out or Path("markets") / f"{market.id}.json"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(text, encoding="utf-8")
+    print(f"marché : {out_path}\n{len(market.basket())} prompts dans le panier")
+    return 0
+
+
 def _publish_dossier(args) -> int:
     from .creneau import Registry
     from .dossier import DECLARED, EXPIRED, REFUTED, VERIFIED, Dossier
@@ -203,6 +271,28 @@ def main(argv: list[str] | None = None) -> int:
     evo.add_argument("--client", help="produit en plus le rapport mensuel de cette entité")
     evo.add_argument("--out", type=Path, help="dossier de sortie (JSON)")
 
+    track = sub.add_parser(
+        "suivi", help="progression descriptive d'une entité à travers plusieurs vagues"
+    )
+    track.add_argument("market")
+    track.add_argument("--client", required=True, help="identifiant de l'entité suivie")
+    track.add_argument("--vagues", required=True, nargs="+", type=Path)
+    track.add_argument("--out", type=Path, help="dossier de sortie (JSON)")
+
+    amorce = sub.add_parser(
+        "amorce", help="génère un fichier de marché minimal pour une entreprise réelle"
+    )
+    amorce.add_argument("client", help="nom de l'entreprise réelle")
+    amorce.add_argument("categorie", help="catégorie, ex. plombier")
+    amorce.add_argument("zone", help="zone, ex. Bordeaux")
+    amorce.add_argument(
+        "--concurrent", action="append", default=[], metavar="NOM",
+        help="nom d'un concurrent local (répétable, au moins un requis)",
+    )
+    amorce.add_argument("--client-domain", help="domaine du site du client, si connu")
+    amorce.add_argument("--id", help="identifiant du marché (déduit du nom sinon)")
+    amorce.add_argument("--out", type=Path, help="chemin du fichier produit")
+
     publish = sub.add_parser(
         "dossier", help="publie un Dossier de Vérité (page publique + sorties machine)"
     )
@@ -224,6 +314,12 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "evolution":
         return _compare_waves(args)
+
+    if args.command == "suivi":
+        return _track_entity(args)
+
+    if args.command == "amorce":
+        return _scaffold_market(args)
 
     market = Market.load(args.market)
 

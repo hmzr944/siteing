@@ -23,6 +23,8 @@ from citation_audit.evolution import (
     paired_bootstrap,
     paired_bootstrap_presence,
     to_text,
+    track,
+    track_to_text,
 )
 from citation_audit.market import Market
 from citation_audit.providers import EVIDENCE_MEASURED, EVIDENCE_SYNTHETIC, EngineResponse
@@ -274,6 +276,42 @@ class TestReports(unittest.TestCase):
         self.assertIn("EFFET ATTRIBUABLE", text)
         self.assertIn("Plancher de bruit", text)
         self.assertIn("compositionnel", text)
+
+
+class TestTrack(unittest.TestCase):
+    """Le suivi descriptif J0 -> J7 -> J30: pas de témoin, pas de causalité.
+    Ce que ces tests protègent, c'est que `track()` ne se mette jamais à
+    ressembler à `compare()` — aucun verdict, aucun intervalle."""
+
+    def setUp(self):
+        self.market = market()
+        self.j0 = wave_from(self.market, {"ferrand": 2}, J0)
+        self.j0.label = "J0"
+        self.j30 = wave_from(self.market, {"ferrand": 20}, J60)
+        self.j30.label = "J30"
+
+    def test_points_are_ordered_by_date_regardless_of_input_order(self):
+        points = track([self.j30, self.j0], "ferrand")
+        self.assertEqual([p.observed_on for p in points], [J0, J60])
+
+    def test_presence_rate_reflects_each_wave_independently(self):
+        points = track([self.j0, self.j30], "ferrand")
+        self.assertLess(points[0].presence_rate, points[1].presence_rate)
+
+    def test_blind_spot_count_is_prompts_minus_hits(self):
+        points = track([self.j0], "ferrand")
+        prompt_count = len(self.j0.usable_prompt_ids)
+        hits = round(points[0].presence_rate * prompt_count)
+        self.assertEqual(points[0].blind_spot_count, prompt_count - hits)
+
+    def test_an_entity_absent_from_every_wave_tracks_at_zero(self):
+        points = track([self.j0, self.j30], "cazenave")
+        self.assertTrue(all(p.presence_rate == 0.0 for p in points))
+
+    def test_rendered_text_carries_the_no_causality_caveat(self):
+        text = track_to_text(track([self.j0, self.j30], "ferrand"), "Atelier Ferrand")
+        self.assertIn("ne prouve aucune causalité", text)
+        self.assertNotIn("établi", text.lower())
 
 
 if __name__ == "__main__":

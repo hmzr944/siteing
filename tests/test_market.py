@@ -5,7 +5,7 @@ import json
 import unittest
 from pathlib import Path
 
-from citation_audit.market import FAMILY_CAPS, Market
+from citation_audit.market import FAMILY_CAPS, Market, scaffold
 
 FIXTURE = Path(__file__).resolve().parent.parent / "markets" / "plombier-bordeaux.json"
 
@@ -101,6 +101,49 @@ class TestValidation(unittest.TestCase):
         raw = load_raw()
         raw.pop("economics")
         self.assertIsNone(Market.from_dict(raw).economics)
+
+
+class TestScaffold(unittest.TestCase):
+    """Le fichier de marché rapide pour un entretien terrain: doit produire un
+    marché valide, pas juste un JSON qui a l'air correct."""
+
+    def test_produces_a_valid_market_with_a_designated_client(self):
+        market = scaffold(
+            "Atelier Ferrand", "rénovation", "Bordeaux",
+            competitors=["Bâti Concept", "Rénov Sud-Ouest"],
+        )
+        self.assertTrue(market.has_client)
+        self.assertEqual(market.client.name, "Atelier Ferrand")
+        self.assertEqual(len(market.competitors), 2)
+        self.assertGreater(len(market.basket()), 0)
+
+    def test_id_is_derived_from_the_client_name_when_not_given(self):
+        market = scaffold("Atelier Ferrand", "rénovation", "Bordeaux", ["X"])
+        self.assertEqual(market.id, "atelier-ferrand")
+
+    def test_refuses_without_a_named_competitor(self):
+        """Sans concurrent, il n'y a pas de marché, seulement une marque
+        isolée: rien à comparer, donc rien à mesurer."""
+        with self.assertRaises(ValueError):
+            scaffold("Atelier Ferrand", "rénovation", "Bordeaux", competitors=[])
+
+    def test_round_trips_through_from_dict(self):
+        """Ce que produit `amorce` en CLI doit être un JSON que `Market.load`
+        accepte tel quel, pas seulement l'objet en mémoire."""
+        market = scaffold("Atelier Ferrand", "rénovation", "Bordeaux", ["X", "Y"])
+        payload = {
+            "id": market.id,
+            "label": market.label,
+            "category": market.category,
+            "zone": market.zone,
+            "entities": [
+                {"name": e.name, "is_client": e.is_client, "domains": list(e.domains)}
+                for e in market.entities
+            ],
+        }
+        reloaded = Market.from_dict(payload)
+        self.assertEqual(reloaded.client.name, market.client.name)
+        self.assertEqual([p.id for p in reloaded.basket()], [p.id for p in market.basket()])
 
 
 if __name__ == "__main__":

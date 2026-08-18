@@ -341,3 +341,41 @@ class Market:
                 )
         prompts.sort(key=lambda p: (p.family, p.id))
         return prompts
+
+
+def scaffold(
+    client_name: str,
+    category: str,
+    zone: str,
+    competitors: list[str],
+    client_domain: str = "",
+    market_id: str = "",
+) -> Market:
+    """Fichier de marché minimal pour une entreprise réelle du terrain.
+
+    Sert le protocole de validation: en entretien, on lance l'audit sur le nom
+    réel de l'entreprise interrogée, pas sur un fictif du panel de mesure. Le
+    résultat passe par `Market.from_dict()` avant d'être renvoyé, pour
+    qu'un marché mal formé échoue ici plutôt qu'au moment de l'audit.
+    """
+    if not competitors:
+        raise ValueError(
+            "au moins un concurrent nommé est requis: sans concurrent, il n'y "
+            "a pas de marché à mesurer, seulement une marque isolée"
+        )
+    market_id = market_id or slug(client_name).replace(" ", "-")
+    data = {
+        "id": market_id,
+        "label": f"{client_name} — {category} — {zone}",
+        "category": category,
+        "zone": zone,
+        "entities": [
+            {
+                "name": client_name,
+                "is_client": True,
+                "domains": [client_domain] if client_domain else [],
+            },
+            *[{"name": name} for name in competitors],
+        ],
+    }
+    return Market.from_dict(data)

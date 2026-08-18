@@ -25,8 +25,10 @@ un bien rival, et un produit qui l'ouvre à tous annule sa propre promesse.
 | [`docs/METHODE.md`](docs/METHODE.md) | la méthode de mesure, limites incluses — destinée à être publique |
 | [`docs/ECONOMIE.md`](docs/ECONOMIE.md) | unité économique, trajectoire, sensibilité |
 | [`docs/VENTE.md`](docs/VENTE.md) | le playbook d'acquisition : séquences, objections, seuils |
+| [`docs/TERRAIN.md`](docs/TERRAIN.md) | le protocole de validation terrain : deux hypothèses, trois niveaux de preuve, seuils verrouillés et hashés |
 | [`STRATEGIE.md`](STRATEGIE.md) | les trois concepts explorés au départ, et pourquoi celui-ci |
 | `citation_audit/` | le moteur de mesure et le Dossier de Vérité |
+| `terrain/` | l'instrument de décision du protocole terrain : seuils, entretiens, verdict |
 | `tools/economics.py` | le modèle économique, exécutable |
 
 ## Démarrer
@@ -152,3 +154,32 @@ coefficient sans seuil de signification sur vingt observations est une illusion
 d'optique. Le signe se lit avec attention, un bon rang Google étant *petit* et
 une bonne part de citation *grande* : rho négatif signifie « bien classé et bien
 cité ».
+
+## Le test terrain
+
+Avant tout repositionnement ou toute couche produit supplémentaire, le
+protocole documenté dans [`docs/TERRAIN.md`](docs/TERRAIN.md) doit trancher
+entre H1 (représentation) et H2 (capacité d'action) sur dix entretiens réels.
+Le paquet `terrain/` en est l'instrument : les seuils sont verrouillés et
+hashés, et la décision refuse d'agréger un entretien mené sous un autre hash.
+
+```bash
+# les seuils verrouillés, et leur empreinte
+python3 -m terrain protocole
+
+# un fichier de marché pour l'entreprise réellement interrogée, pas un fictif
+python3 -m citation_audit amorce "Nom réel" "catégorie" "Bordeaux" \
+    --concurrent "Concurrent 1" --concurrent "Concurrent 2" \
+    --out markets/entreprise-reelle.json
+
+# le verdict, une fois les dix entretiens consignés (voir terrain/gabarit-entretien.json)
+python3 -m terrain decision entretiens/
+
+# la progression descriptive d'une entité entre plusieurs vagues (J0 -> J7 -> J30),
+# sans groupe témoin: utile en entretien, ne prouve aucune causalité
+python3 -m citation_audit suivi markets/entreprise-reelle.json \
+    --client entreprise-reelle --vagues vagues/j0.json vagues/j7.json vagues/j30.json
+```
+
+L'exécution des dix entretiens réels — les contacts, les appels, les factures
+— reste entièrement hors du dépôt : c'est un travail de terrain, pas de code.
