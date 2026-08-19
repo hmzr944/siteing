@@ -15,7 +15,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import date
+from pathlib import Path
 
+from .catalogue import Nature, load_all, merge
 from .territoire import Territoire
 
 # Provenance de l'information. Elle ne dit pas si c'est vrai, elle dit d'où ça
@@ -38,65 +40,14 @@ PROVENANCES = {
 # une donnée que l'entreprise engage, elle ne peut pas reposer sur un souvenir.
 DOCUMENTED = frozenset({FROM_INVOICE, FROM_QUOTE})
 
-
-@dataclass(frozen=True)
-class Nature:
-    """Un type de chantier, avec l'unité et les bandes qui le rendent comparable."""
-
-    code: str
-    label: str
-    unit: str                          # "m2", "ml", "logement"
-    bands: tuple[tuple[float, float | None], ...]
-    # Un prix unitaire n'a de sens que si l'ouvrage se mesure. Une verrière se
-    # compte à la pièce: publier un prix au mètre y serait trompeur.
-    unit_price_meaningful: bool = True
-
-    def band_of(self, size: float | None) -> str | None:
-        """Étiquette de la bande de taille, ou ``None`` si la taille est inconnue."""
-        if size is None:
-            return None
-        for low, high in self.bands:
-            if size >= low and (high is None or size < high):
-                return f"{low:g} à {high:g} {self.unit}" if high else f"{low:g} {self.unit} et plus"
-        return None
-
-
-NATURES: dict[str, Nature] = {
-    "salle-de-bain": Nature(
-        "salle-de-bain", "Rénovation de salle de bain", "m2",
-        ((0, 5), (5, 8), (8, 12), (12, None)),
-    ),
-    "cuisine": Nature(
-        "cuisine", "Rénovation de cuisine", "m2",
-        ((0, 8), (8, 14), (14, None)),
-    ),
-    "renovation-globale": Nature(
-        "renovation-globale", "Rénovation globale", "m2",
-        ((0, 60), (60, 100), (100, 150), (150, None)),
-    ),
-    "isolation-exterieure": Nature(
-        "isolation-exterieure", "Isolation par l'extérieur", "m2",
-        ((0, 80), (80, 140), (140, None)),
-    ),
-    "ravalement-pierre": Nature(
-        "ravalement-pierre", "Ravalement de façade en pierre de taille", "m2",
-        ((0, 60), (60, 120), (120, None)),
-    ),
-    "verriere": Nature(
-        "verriere", "Pose d'une verrière d'atelier", "ml",
-        ((0, 2), (2, 4), (4, None)),
-        unit_price_meaningful=False,
-    ),
-}
-
-# Typologies du bâti bordelais. Elles comptent parce qu'elles portent un
-# vocabulaire d'achat distinctif, donc des requêtes peu disputées.
-TYPOLOGIES = {
-    "echoppe": "Échoppe bordelaise",
-    "immeuble-pierre": "Immeuble en pierre de taille",
-    "appartement": "Appartement",
-    "maison": "Maison individuelle",
-}
+# Le vocabulaire des natures de chantier n'a jamais été spécifique à la
+# rénovation dans sa mécanique (comparabilité par bande, seuil de publication,
+# preuve par pièce) — seul le contenu l'était, codé en dur. Il est désormais
+# chargé depuis ``metiers/``, un fichier JSON par métier, et fusionné: le même
+# Noyau sert n'importe quel métier qui documente des interventions datées,
+# localisées et facturées, sans changer une ligne de ce module.
+_METIERS_DIR = Path(__file__).resolve().parent.parent / "metiers"
+NATURES, TYPOLOGIES = merge(load_all(_METIERS_DIR))
 
 
 @dataclass(frozen=True)

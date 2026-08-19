@@ -1,4 +1,4 @@
-# Le Noyau — schéma de la verticale Rénovation
+# Le Noyau — schéma de la donnée, quel que soit le métier
 
 > C'est l'actif. Le rendu (site, flux, fiche) est une commodité de distribution ;
 > ce qui ne se copie pas, c'est la mémoire accumulée et vérifiée de ce que
@@ -222,6 +222,14 @@ Un invariant testé : **publié et manques ne se recouvrent jamais.**
    utilisable par un agent qui transacte.
 3. **Les surfaces.** Les assertions sont structurées mais pas encore rendues en
    schema.org, fiche locale, ni point d'accès interrogeable.
-4. **Les autres verticales.** Les natures et les bandes sont propres à la
-   rénovation. Le noyau générique (territoire, provenance, seuils, distribution)
-   est réutilisable ; le vocabulaire métier ne l'est pas, et c'est normal.
+4. **Les autres verticales.** ~~Fait.~~ Les natures et les bandes ne sont plus
+   codées en dur pour la rénovation : elles vivent dans `metiers/*.json`, un
+   fichier par métier, chargés et fusionnés par `noyau.catalogue`. Le noyau
+   générique (territoire, provenance, seuils, distribution) et le vocabulaire
+   métier sont désormais découplés au même titre — voir
+   `tools/demo_multi_metier.py`, qui publie une rénovation
+   (`atelier-ferrand.json`) et une plomberie (`aqua-bordeaux.json`) avec
+   exactement le même code, aucune branche par métier. Ajouter un métier ne
+   demande qu'un fichier JSON de plus dans `metiers/`, avec des codes de
+   nature qui ne collisionnent pas avec ceux déjà pris (`merge()` refuse la
+   collision plutôt que de l'écraser silencieusement).

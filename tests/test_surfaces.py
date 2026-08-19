@@ -309,5 +309,42 @@ class TestGenerate(unittest.TestCase):
         self.assertEqual(len(report["pages_detail"]), report["pages"])
 
 
+class TestMultiMetier(unittest.TestCase):
+    """Ce module ne doit rien connaître de la rénovation en particulier.
+
+    Régression directe: la première version de ``for_node`` écrivait
+    ``"Rénovation d'habitat"`` en dur comme repli pour les pages de
+    territoire, ce qui aurait publié un type de service faux pour n'importe
+    quel autre métier. Découvert en construisant ce Noyau de plomberie, et
+    corrigé ici.
+    """
+
+    def plombier(self) -> Noyau:
+        return Noyau.load(
+            ROOT_DIR / "noyaux" / "aqua-bordeaux.json",
+            Referentiel.load(ROOT_DIR / "referentiels" / "bordeaux.json"),
+        )
+
+    def test_no_offer_vocabulary_for_a_different_metier(self):
+        core = self.plombier()
+        for node in build(core, TODAY):
+            found = contains_offer_vocabulary(for_node(core, node, TODAY))
+            self.assertEqual(found, [], node.slug)
+
+    def test_territoire_service_type_reflects_the_noyau_category_not_renovation(self):
+        core = self.plombier()
+        territoire_nodes = [n for n in build(core, TODAY) if n.kind == TERRITOIRE]
+        self.assertTrue(territoire_nodes)
+        for node in territoire_nodes:
+            document = for_node(core, node, TODAY)
+            self.assertEqual(document["serviceType"], core.category.capitalize())
+            self.assertNotIn("Rénovation", document["serviceType"])
+
+    def test_a_full_site_generates_for_a_non_renovation_metier(self):
+        with TemporaryDirectory() as tmp:
+            report = generate(self.plombier(), "https://aqua-bordeaux.fr", tmp, TODAY)
+        self.assertGreater(report["pages"], 0)
+
+
 if __name__ == "__main__":
     unittest.main()

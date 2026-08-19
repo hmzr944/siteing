@@ -1,0 +1,40 @@
+{
+  "metier": "plomberie",
+  "label": "Plomberie",
+  "natures": {
+    "chauffe-eau": {
+      "label": "Remplacement de chauffe-eau",
+      "unit": "litre",
+      "bands": [[0, 100], [100, 200], [200, null]]
+    },
+    "chaudiere": {
+      "label": "Installation de chaudière",
+      "unit": "kw",
+      "bands": [[0, 15], [15, 25], [25, null]]
+    },
+    "salle-d-eau-plomberie": {
+      "label": "Plomberie de salle d'eau",
+      "unit": "point d'eau",
+      "bands": [[0, 3], [3, 6], [6, null]]
+    },
+    "debouchage": {
+      "label": "Débouchage de canalisation",
+      "unit": "intervention",
+      "bands": [[0, null]],
+      "unit_price_meaningful": false
+    },
+    "recherche-fuite": {
+      "label": "Recherche et réparation de fuite",
+      "unit": "intervention",
+      "bands": [[0, null]],
+      "unit_price_meaningful": false
+    }
+  },
+  "typologies": {
+    "echoppe": "Échoppe bordelaise",
+    "immeuble-pierre": "Immeuble en pierre de taille",
+    "appartement": "Appartement",
+    "maison": "Maison individuelle",
+    "local-commercial": "Local commercial"
+  }
+}

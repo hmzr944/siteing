@@ -1,0 +1,151 @@
+{
+  "_note": "Noyau de démonstration, métier plomberie — sert à prouver que le même code (chantier, budget, noyau, surfaces) sert un métier différent de la rénovation sans une seule ligne changée. Entreprise, chantiers, montants et références de pièces sont fictifs.",
+  "entity_id": "aqua-bordeaux",
+  "name": "Aqua Bordeaux",
+  "category": "entreprise de plomberie",
+  "legal_id": "512847093",
+  "contact_url": "https://aqua-bordeaux.fr/",
+  "claims": [
+    {
+      "key": "immatriculation",
+      "label": "Existence légale",
+      "value": "SARL immatriculée au RCS de Bordeaux depuis mars 2016",
+      "cluster": "identite",
+      "schema_property": "foundingDate",
+      "schema_value": "2016-03",
+      "verified_on": "2026-04-10",
+      "valid_until": "2027-04-10",
+      "evidence": [
+        {
+          "kind": "immatriculation",
+          "reference": "RCS BX 512847093",
+          "issued_on": "2026-04-01",
+          "checked_by": "Source Primaire"
+        }
+      ]
+    },
+    {
+      "key": "decennale",
+      "label": "Assurance décennale",
+      "value": "Responsabilité décennale, plomberie et chauffage",
+      "cluster": "identite",
+      "verified_on": "2025-06-15",
+      "valid_until": "2026-06-15",
+      "evidence": [
+        {
+          "kind": "assurance",
+          "reference": "Police 5521-098-C",
+          "issued_on": "2025-06-10",
+          "checked_by": "Source Primaire"
+        }
+      ]
+    }
+  ],
+  "chantiers": [
+    {
+      "id": "ce-01",
+      "nature": "chauffe-eau",
+      "territoire": "chartrons",
+      "typologie": "appartement",
+      "completed_on": "2025-05-12",
+      "size": 150,
+      "budget_eur": 1200,
+      "duration_days": 1,
+      "provenance": "facture",
+      "reference": "F2025-118"
+    },
+    {
+      "id": "ce-02",
+      "nature": "chauffe-eau",
+      "territoire": "chartrons",
+      "typologie": "echoppe",
+      "completed_on": "2025-07-03",
+      "size": 180,
+      "budget_eur": 1350,
+      "duration_days": 1,
+      "provenance": "facture",
+      "reference": "F2025-142"
+    },
+    {
+      "id": "ce-03",
+      "nature": "chauffe-eau",
+      "territoire": "chartrons",
+      "typologie": "appartement",
+      "completed_on": "2025-11-20",
+      "size": 120,
+      "budget_eur": 1100,
+      "duration_days": 1,
+      "provenance": "facture",
+      "reference": "F2025-201"
+    },
+    {
+      "id": "ce-04",
+      "nature": "chauffe-eau",
+      "territoire": "cauderan",
+      "typologie": "maison",
+      "completed_on": "2025-09-08",
+      "size": 160,
+      "budget_eur": 1250,
+      "duration_days": 1,
+      "provenance": "facture",
+      "reference": "F2025-167"
+    },
+    {
+      "id": "ce-05",
+      "nature": "chauffe-eau",
+      "territoire": "cauderan",
+      "typologie": "maison",
+      "completed_on": "2026-01-15",
+      "size": 140,
+      "budget_eur": 1150,
+      "duration_days": 1,
+      "provenance": "facture",
+      "reference": "F2026-014"
+    },
+    {
+      "id": "ch-01",
+      "nature": "chaudiere",
+      "territoire": "chartrons",
+      "typologie": "echoppe",
+      "completed_on": "2025-10-02",
+      "size": 20,
+      "budget_eur": 4200,
+      "duration_days": 2,
+      "provenance": "facture",
+      "reference": "F2025-188"
+    },
+    {
+      "id": "ch-02",
+      "nature": "chaudiere",
+      "territoire": "cauderan",
+      "typologie": "maison",
+      "completed_on": "2026-02-20",
+      "size": 22,
+      "budget_eur": 4400,
+      "duration_days": 2,
+      "provenance": "facture",
+      "reference": "F2026-027"
+    },
+    {
+      "id": "fuite-01",
+      "nature": "recherche-fuite",
+      "territoire": "chartrons",
+      "typologie": "echoppe",
+      "completed_on": "2026-03-05",
+      "budget_eur": 280,
+      "duration_days": 1,
+      "provenance": "facture",
+      "reference": "F2026-039"
+    },
+    {
+      "id": "deb-01",
+      "nature": "debouchage",
+      "territoire": "cauderan",
+      "typologie": "local-commercial",
+      "completed_on": "2026-02-01",
+      "budget_eur": 180,
+      "duration_days": 1,
+      "provenance": "vocal"
+    }
+  ]
+}

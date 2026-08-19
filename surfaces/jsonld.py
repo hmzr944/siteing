@@ -205,7 +205,11 @@ def for_node(core: Noyau, node: Node, today: date) -> dict:
         service["workExample"] = works
 
     if node.kind == TERRITOIRE and spec is None:
-        service["serviceType"] = "Rénovation d'habitat"
+        # Une page de territoire n'a pas de nature (elle couvre tout le
+        # métier sur ce quartier): le type de service vient de la catégorie
+        # du Noyau, jamais d'un métier codé en dur — ce module sert
+        # n'importe quel métier, pas seulement la rénovation.
+        service["serviceType"] = core.category.capitalize()
 
     return service
 

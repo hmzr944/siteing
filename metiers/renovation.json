@@ -1,0 +1,43 @@
+{
+  "metier": "renovation",
+  "label": "Rénovation d'habitat",
+  "natures": {
+    "salle-de-bain": {
+      "label": "Rénovation de salle de bain",
+      "unit": "m2",
+      "bands": [[0, 5], [5, 8], [8, 12], [12, null]]
+    },
+    "cuisine": {
+      "label": "Rénovation de cuisine",
+      "unit": "m2",
+      "bands": [[0, 8], [8, 14], [14, null]]
+    },
+    "renovation-globale": {
+      "label": "Rénovation globale",
+      "unit": "m2",
+      "bands": [[0, 60], [60, 100], [100, 150], [150, null]]
+    },
+    "isolation-exterieure": {
+      "label": "Isolation par l'extérieur",
+      "unit": "m2",
+      "bands": [[0, 80], [80, 140], [140, null]]
+    },
+    "ravalement-pierre": {
+      "label": "Ravalement de façade en pierre de taille",
+      "unit": "m2",
+      "bands": [[0, 60], [60, 120], [120, null]]
+    },
+    "verriere": {
+      "label": "Pose d'une verrière d'atelier",
+      "unit": "ml",
+      "bands": [[0, 2], [2, 4], [4, null]],
+      "unit_price_meaningful": false
+    }
+  },
+  "typologies": {
+    "echoppe": "Échoppe bordelaise",
+    "immeuble-pierre": "Immeuble en pierre de taille",
+    "appartement": "Appartement",
+    "maison": "Maison individuelle"
+  }
+}
