@@ -20,8 +20,11 @@ from .report import to_html, to_text
 from .score import compute
 
 
-def _run(market: Market, specs: list[str], archive_dir: Path | None):
-    prompts = market.basket()
+def _run(
+    market: Market, specs: list[str], archive_dir: Path | None,
+    prompts: list | None = None,
+):
+    prompts = prompts if prompts is not None else market.basket()
     runs = []
     for spec in specs:
         try:
@@ -187,6 +190,43 @@ def _scaffold_market(args) -> int:
     return 0
 
 
+def _prospection(args) -> int:
+    from .prospection import email_jour_0, to_text as prospection_text
+    from .score import compute
+
+    market = Market.load(args.market)
+    if not market.has_client:
+        raise SystemExit(
+            "l'Audit d'Invisibilité vise une entreprise nommée: ce marché n'a "
+            "pas de client désigné (voir `citation_audit amorce`)"
+        )
+    prompts = market.prospecting_basket(args.limit)
+    _, runs = _run(market, args.provider or ["synthetic"], args.archive, prompts=prompts)
+    result = compute(market, prompts, runs)
+    print(prospection_text(result))
+
+    if args.email:
+        print("\n" + "=" * 72 + "\n")
+        try:
+            print(
+                email_jour_0(
+                    result, args.prenom or "{prénom}", args.lien or "{lien}",
+                    args.signature or "{signature}",
+                )
+            )
+        except ValueError as exc:
+            print(f"e-mail non généré : {exc}", file=sys.stderr)
+
+    if args.out:
+        args.out.mkdir(parents=True, exist_ok=True)
+        path = args.out / f"{market.id}-prospection.json"
+        path.write_text(
+            json.dumps(result.to_dict(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
+        print(f"\nannexe : {path}")
+    return 0
+
+
 def _publish_dossier(args) -> int:
     from .creneau import Registry
     from .dossier import DECLARED, EXPIRED, REFUTED, VERIFIED, Dossier
@@ -293,6 +333,22 @@ def main(argv: list[str] | None = None) -> int:
     amorce.add_argument("--id", help="identifiant du marché (déduit du nom sinon)")
     amorce.add_argument("--out", type=Path, help="chemin du fichier produit")
 
+    prospection = sub.add_parser(
+        "prospection",
+        help="Audit d'Invisibilité: panier réduit, jamais présentable comme relevé contractuel",
+    )
+    prospection.add_argument("market")
+    prospection.add_argument("--limit", type=int, default=12, help="taille du panier réduit")
+    prospection.add_argument("--provider", action="append", default=None, metavar="SPEC")
+    prospection.add_argument("--archive", type=Path)
+    prospection.add_argument("--out", type=Path, help="dossier de sortie (JSON)")
+    prospection.add_argument(
+        "--email", action="store_true", help="génère aussi l'e-mail jour 0 (docs/VENTE.md §2)"
+    )
+    prospection.add_argument("--prenom", help="prénom du dirigeant, pour l'e-mail")
+    prospection.add_argument("--lien", help="lien vers la vidéo de 90 secondes, pour l'e-mail")
+    prospection.add_argument("--signature", help="signature, pour l'e-mail")
+
     publish = sub.add_parser(
         "dossier", help="publie un Dossier de Vérité (page publique + sorties machine)"
     )
@@ -314,6 +370,9 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "evolution":
         return _compare_waves(args)
+
+    if args.command == "prospection":
+        return _prospection(args)
 
     if args.command == "suivi":
         return _track_entity(args)

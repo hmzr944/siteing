@@ -342,6 +342,25 @@ class Market:
         prompts.sort(key=lambda p: (p.family, p.id))
         return prompts
 
+    def prospecting_basket(self, limit: int = 12) -> list[Prompt]:
+        """Panier réduit pour l'Audit d'Invisibilité (docs/VENTE.md).
+
+        Sous-ensemble du panier complet, jamais un panier distinct: mêmes
+        gabarits, mêmes identifiants stables, donc directement comparable au
+        relevé contractuel qui suivra. On retient les prompts au poids
+        commercial le plus fort — les plus proches d'une décision d'achat,
+        donc les plus convaincants montrés à un dirigeant en 90 secondes —
+        puis on tranche à ``limit``, déterministe grâce au tri stable du
+        panier complet.
+
+        En dessous de ``score.MIN_PROMPTS`` (20), un relevé n'est structurellement
+        pas présentable comme mesure contractuelle (``AuditResult.is_presentable``) —
+        c'est volontaire: un panier de 12 questions reste un repère de
+        prospection, jamais le relevé vendu.
+        """
+        ordered = sorted(self.basket(), key=lambda p: (-p.weight, p.family, p.id))
+        return ordered[:limit]
+
 
 def scaffold(
     client_name: str,

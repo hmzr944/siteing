@@ -9,7 +9,37 @@
 ## 1. L'Audit d'Invisibilité, arme principale
 
 Panier réduit à 12 questions, un seul moteur, rendu vidéo de 90 secondes. Coût
-cible **9 €**. Ce qui apparaît à l'écran :
+cible **9 €**. Construit et testé (`citation_audit/prospection.py`, `Market.prospecting_basket()`,
+12 tests) :
+
+```bash
+# fichier de marché minimal pour l'entreprise réellement démarchée
+python3 -m citation_audit amorce "Nom réel" "catégorie" "Ville" \
+    --concurrent "Concurrent 1" --concurrent "Concurrent 2" \
+    --out markets/prospect.json
+
+# l'audit d'invisibilité + l'e-mail jour 0, rempli avec le vrai concurrent cité
+python3 -m citation_audit prospection markets/prospect.json \
+    --provider anthropic:claude-sonnet-5 --email \
+    --prenom "Marc" --lien "https://..." --signature "Julien"
+```
+
+Le panier réduit est un **sous-ensemble** du panier complet (mêmes gabarits,
+mêmes identifiants stables), jamais une liste distincte — ce qui rend le
+relevé de prospection directement comparable au relevé contractuel qui
+suivra. Il est aussi, par construction, **structurellement en dessous du
+seuil de présentabilité** (`score.MIN_PROMPTS = 20`) : `AuditResult.is_presentable`
+y est toujours faux. Ce n'est pas un oubli, c'est le garde-fou qui rend
+impossible de confondre ce relevé avec celui qu'on facture — voir §
+« deux garde-fous non négociables » ci-dessous, maintenant vérifiés par le
+code et non plus seulement par la discipline commerciale.
+
+L'e-mail jour 0 (§2) se génère automatiquement, rempli avec le concurrent
+**réellement** le plus cité sur ce prospect précis — jamais un nom
+générique. `email_jour_0()` refuse d'écrire l'e-mail si aucun concurrent
+n'a été cité à la place du prospect : pas de mensonge par construction.
+
+Ce qui apparaît à l'écran :
 
 1. on tape une question d'achat de **son** marché ;
 2. la réponse nomme deux ou trois de ses concurrents ;

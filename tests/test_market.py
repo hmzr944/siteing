@@ -60,6 +60,45 @@ class TestBasket(unittest.TestCase):
         self.assertGreater(by_family["transactionnel"], by_family["decouverte"])
 
 
+class TestProspectingBasket(unittest.TestCase):
+    """Le panier de l'Audit d'Invisibilité (docs/VENTE.md): un sous-ensemble
+    du panier complet, jamais une liste distincte de prompts."""
+
+    def setUp(self):
+        self.market = Market.load(FIXTURE)
+
+    def test_is_a_strict_subset_of_the_full_basket(self):
+        full = {p.id for p in self.market.basket()}
+        reduced = {p.id for p in self.market.prospecting_basket(12)}
+        self.assertTrue(reduced <= full)
+
+    def test_respects_the_limit(self):
+        self.assertLessEqual(len(self.market.prospecting_basket(12)), 12)
+        self.assertLessEqual(len(self.market.prospecting_basket(3)), 3)
+
+    def test_keeps_the_highest_commercial_weight_prompts(self):
+        """C'est ce qui rend le panier convaincant en 90 secondes: les
+        questions les plus proches d'une décision d'achat, pas un tirage."""
+        reduced = self.market.prospecting_basket(5)
+        full_sorted = sorted(self.market.basket(), key=lambda p: -p.weight)
+        self.assertEqual({p.id for p in reduced}, {p.id for p in full_sorted[:5]})
+
+    def test_is_deterministic(self):
+        self.assertEqual(
+            [p.id for p in self.market.prospecting_basket(12)],
+            [p.id for p in Market.load(FIXTURE).prospecting_basket(12)],
+        )
+
+    def test_is_too_small_to_be_presentable_as_the_contractual_measurement(self):
+        """Le seuil de présentabilité (score.MIN_PROMPTS) doit rester au-dessus
+        de la taille du panier de prospection — sinon l'Audit d'Invisibilité
+        pourrait se faire passer pour le relevé vendu, ce que docs/VENTE.md
+        interdit explicitement."""
+        from citation_audit.score import MIN_PROMPTS
+
+        self.assertLess(len(self.market.prospecting_basket(12)), MIN_PROMPTS)
+
+
 class TestBasketVersion(unittest.TestCase):
     def test_version_is_stable_across_loads(self):
         self.assertEqual(Market.load(FIXTURE).basket_version, Market.load(FIXTURE).basket_version)

@@ -77,19 +77,29 @@ est incompatible avec la rareté qui fait notre prix.
 - rapport client HTML + annexe JSON + archivage des réponses brutes ;
 - modèle économique exécutable (`tools/economics.py`).
 
-**À construire, dans cet ordre :**
+**État réel, mis à jour au fil de la construction** (cette liste datait d'avant
+la plupart de ce qui suit — laissée visible pour la trace, corrigée plutôt que
+réécrite en silence) :
 
-1. **Deuxième famille de moteurs** (T+1 mois) — un seul éditeur ne fait pas une
-   mesure de marché. C'est un prérequis contractuel, pas une amélioration.
-2. **Le Dossier de Vérité comme produit** (T+2) — schéma, endpoint servi,
-   génération des formats structurés. C'est la partie *livrée*, aujourd'hui
-   absente du dépôt : le moteur mesure, il ne corrige pas encore.
-3. **Chaîne de vérification** (T+3) — collecte de pièces, contrôle, journal
-   d'attestation daté. Sans elle, nous ne sommes qu'un outil de mesure.
-4. **Industrialisation de l'audit de prospection** (T+3) — panier réduit à 12
-   questions, 1 moteur, rendu vidéo automatique. Coût cible : 9 € par audit.
-5. **Registre des créneaux** (T+4) — qui détient quoi, où, jusqu'à quand.
-   L'exclusivité vendue doit être une contrainte système, pas une promesse orale.
+1. ~~Deuxième famille de moteurs.~~ Fait — `--provider` est répétable, un seul
+   éditeur n'est jamais accepté comme mesure de marché.
+2. ~~Le Dossier de Vérité comme produit.~~ Fait, et étendu au-delà de la
+   rénovation : voir `noyau/` et `surfaces/` (`docs/NOYAU.md`, `docs/SURFACES.md`)
+   — universel par métier (`metiers/*.json`) et par ville (`referentiels/*.json`),
+   avec ou sans ancrage géographique.
+3. ~~Chaîne de vérification.~~ Fait — provenance par pièce (facture, devis),
+   seuils de publication testés (`noyau/budget.py`, `noyau/noyau.py`).
+4. **Industrialisation de l'audit de prospection.** Fait pour la partie
+   texte : panier réduit à 12 questions (`Market.prospecting_basket()`),
+   1 moteur, e-mail jour 0 généré automatiquement
+   (`citation_audit/prospection.py`, voir `docs/VENTE.md` §1). **Pas fait** :
+   le rendu vidéo de 90 secondes reste manuel.
+5. ~~Registre des créneaux.~~ Fait — `citation_audit/creneau.py`, trois
+   paliers (socle/position/exclusif), refus de conflit plutôt qu'avertissement,
+   maintenant consulté par les surfaces publiques (`surfaces/exclusivite.py`).
+6. **Le niveau engageant.** Toujours pas fait — voir `docs/NOYAU.md` §7.
+7. **Le commerce et l'hôtellerie-restauration.** Toujours hors scope,
+   délibérément — voir `docs/NOYAU.md` §7.
 
 ## 5. Économie
 

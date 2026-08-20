@@ -12,6 +12,7 @@ Voir ``docs/METHODE.md`` pour la méthodologie et ses limites.
 from .creneau import Grant, Registry, SlotConflict
 from .dossier import Claim, Dossier, Evidence
 from .market import Economics, Entity, Market, Prompt
+from .prospection import email_jour_0
 from .providers import EngineResponse, build as build_provider
 from .publish import to_jsonld, to_manifest, write_bundle
 from .report import to_html, to_text
@@ -33,6 +34,7 @@ __all__ = [
     "SlotConflict",
     "build_provider",
     "compute",
+    "email_jour_0",
     "to_document",
     "to_html",
     "to_jsonld",
