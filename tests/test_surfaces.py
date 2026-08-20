@@ -13,6 +13,7 @@ from datetime import date
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from citation_audit.creneau import EXCLUSIF, SOCLE, Registry
 from noyau import MIN_CHANTIERS_TERRITOIRE, Noyau, Referentiel
 from surfaces import (
     AI_CRAWLERS,
@@ -344,6 +345,75 @@ class TestMultiMetier(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             report = generate(self.plombier(), "https://aqua-bordeaux.fr", tmp, TODAY)
         self.assertGreater(report["pages"], 0)
+
+
+class TestExclusivite(unittest.TestCase):
+    """La seule chose qui distingue deux Noyaux par ailleurs identiques.
+
+    Le Noyau se publie sans condition (voir la classe ci-dessus): l'exclusivité
+    est une couche commerciale séparée, qui ne doit jamais s'inviter sans un
+    créneau actif ni rester silencieuse quand il existe.
+    """
+
+    def registry_with(self, entity_id: str, tier: str = EXCLUSIF) -> Registry:
+        registry = Registry(grants=[])
+        registry.grant(
+            "entreprise de rénovation", "Bordeaux Métropole", entity_id, tier,
+            date(2026, 1, 1), date(2027, 1, 1),
+        )
+        return registry
+
+    def test_no_registry_means_no_mention_anywhere(self):
+        document = for_node(core(), build(core(), TODAY)[0], TODAY, None)
+        self.assertNotIn("additionalProperty", document)
+        rendered = page(core(), build(core(), TODAY)[0], build(core(), TODAY), TODAY, None)
+        self.assertNotIn("exclusive", rendered.lower())
+
+    def test_the_actual_holder_gets_the_mention_everywhere(self):
+        registry = self.registry_with("ferrand")
+        nodes = build(core(), TODAY)
+        document = for_node(core(), nodes[0], TODAY, registry)
+        self.assertIn("Position vérifiée exclusive", str(document))
+
+        rendered = page(core(), nodes[0], nodes, TODAY, registry)
+        self.assertIn("Position vérifiée exclusive", rendered)
+
+        md = markdown(core(), nodes[0], TODAY, registry)
+        self.assertIn("Position vérifiée exclusive", md)
+
+        txt = llms_txt(core(), BASE, nodes, registry, TODAY)
+        self.assertIn("Position vérifiée exclusive", txt)
+
+    def test_a_registry_holding_someone_else_stays_silent(self):
+        """Le créneau de rénovation à Bordeaux appartient à un tiers: Atelier
+        Ferrand ne doit jamais laisser entendre qu'il en est le titulaire."""
+        registry = self.registry_with("un-autre-artisan")
+        nodes = build(core(), TODAY)
+        document = for_node(core(), nodes[0], TODAY, registry)
+        self.assertNotIn("additionalProperty", document)
+
+    def test_a_shared_non_exclusive_tier_does_not_trigger_the_mention(self):
+        """SOCLE et POSITION ne réservent rien: seul EXCLUSIF le fait."""
+        registry = self.registry_with("ferrand", tier=SOCLE)
+        nodes = build(core(), TODAY)
+        document = for_node(core(), nodes[0], TODAY, registry)
+        self.assertNotIn("additionalProperty", document)
+
+    def test_the_mention_never_uses_offer_vocabulary(self):
+        registry = self.registry_with("ferrand")
+        for node in build(core(), TODAY):
+            found = contains_offer_vocabulary(for_node(core(), node, TODAY, registry))
+            self.assertEqual(found, [], node.slug)
+
+    def test_generate_reports_the_exclusive_flag(self):
+        registry = self.registry_with("ferrand")
+        with TemporaryDirectory() as tmp:
+            report = generate(core(), BASE, tmp, TODAY, registry=registry)
+        self.assertTrue(report["exclusive"])
+
+        with TemporaryDirectory() as tmp:
+            report = generate(core(), BASE, tmp, TODAY)
+        self.assertFalse(report["exclusive"])
 
 
 if __name__ == "__main__":

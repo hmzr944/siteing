@@ -25,8 +25,10 @@ from __future__ import annotations
 
 from datetime import date
 
+from citation_audit.creneau import Registry
 from noyau import NATURES, Noyau
 
+from .exclusivite import is_exclusive_holder
 from .lattice import CROISEMENT, ROOT, TERRITOIRE, Node
 
 CONTEXT = "https://schema.org"
@@ -43,7 +45,7 @@ FORBIDDEN_TERMS = (
 )
 
 
-def _organisation(core: Noyau, today: date) -> dict:
+def _organisation(core: Noyau, today: date, registry: Registry | None = None) -> dict:
     """L'entreprise, telle qu'un moteur doit la comprendre."""
     document: dict = {
         "@type": "HomeAndConstructionBusiness",
@@ -55,6 +57,21 @@ def _organisation(core: Noyau, today: date) -> dict:
             "publiés et vérifiés."
         ),
     }
+    # Le registre reste la seule source de vérité: on ne publie une mention
+    # d'exclusivité que si le créneau actif appartient bien à ce Noyau, jamais
+    # par supposition. Vocabulaire de statut, pas d'offre: aucun prix, aucun
+    # engagement commercial n'apparaît ici.
+    if is_exclusive_holder(core.entity_id, core.category, core.zone, registry, today):
+        document.setdefault("additionalProperty", []).append(
+            {
+                "@type": "PropertyValue",
+                "name": "Position vérifiée exclusive",
+                "value": (
+                    f"Source de référence exclusive pour {core.category} sur "
+                    f"{core.zone}"
+                ),
+            }
+        )
     if core.contact_url:
         document["url"] = core.contact_url
     if core.legal_id:
@@ -102,7 +119,7 @@ def _organisation(core: Noyau, today: date) -> dict:
     if credentials:
         document["hasCredential"] = credentials
     if extras:
-        document["additionalProperty"] = extras
+        document.setdefault("additionalProperty", []).extend(extras)
 
     return document
 
@@ -162,9 +179,11 @@ def _realisations(node: Node, limit: int = 12) -> list[dict]:
     return works
 
 
-def for_node(core: Noyau, node: Node, today: date) -> dict:
+def for_node(
+    core: Noyau, node: Node, today: date, registry: Registry | None = None
+) -> dict:
     """Le document structuré d'une page du treillis."""
-    organisation = _organisation(core, today)
+    organisation = _organisation(core, today, registry)
 
     if node.kind == ROOT:
         return {"@context": CONTEXT, **organisation}

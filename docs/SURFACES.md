@@ -137,7 +137,38 @@ La mention est propagée aux trois rendus : HTML, Markdown et `measurementTechni
 
 ---
 
-## 6. Les quatre fichiers qui comptent autant que les pages
+## 6. La position vérifiée exclusive : le registre, jamais une condition
+
+Deux couches, jamais confondues :
+
+* le **Noyau se publie sans condition**. N'importe quelle entreprise, quel que
+  soit son métier (`noyau.catalogue`), peut être représentée, vérifiée, citée.
+  C'est la couche universelle ;
+* l'**exclusivité est une couche commerciale séparée, au-dessus**, gouvernée
+  par le registre des créneaux (`citation_audit.creneau.Registry`). Un Noyau
+  sans créneau exclusif reste publié normalement, simplement sans la mention.
+
+`surfaces.exclusivite.is_exclusive_holder(entity_id, category, zone, registry, today)`
+est la seule porte : elle n'affirme une exclusivité que si le registre la
+confirme pour la date donnée, jamais par supposition — même logique qu'un
+budget qui ne se publie qu'adossé à une pièce. Quand c'est le cas, la mention
+« Position vérifiée exclusive » apparaît identiquement dans les quatre
+rendus (JSON-LD, HTML, Markdown, `llms.txt`), en `additionalProperty` — jamais
+en vocabulaire d'offre, le même interdit que pour le budget.
+
+```bash
+python3 -m surfaces noyaux/atelier-ferrand.json \
+    --url https://atelier-ferrand.fr --out out/site \
+    --registre registre/creneaux.json
+```
+
+Sans `--registre`, ou sans créneau actif pour ce Noyau, la génération est
+strictement identique à avant — aucune régression pour les Noyaux qui ne
+détiennent aucun créneau.
+
+---
+
+## 7. Les quatre fichiers qui comptent autant que les pages
 
 **`robots.txt` — la couche de permission, et le premier point de contrôle.**
 Beaucoup de sites de TPE bloquent par accident les robots d'IA, hérité d'un
@@ -169,7 +200,7 @@ déjà structurés.
 
 ---
 
-## 7. Ce que ça ne fait pas encore
+## 8. Ce que ça ne fait pas encore
 
 1. **Le rendu adaptatif selon le contexte d'entrée.** Le treillis produit des
    pages statiques. La composition selon la requête référente reste à faire, et

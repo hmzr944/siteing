@@ -16,6 +16,7 @@ API et agent à agent viendra pour le transactionnel, quand les protocoles auron
 des volumes réels.
 """
 
+from .exclusivite import exclusive_grant, is_exclusive_holder
 from .jsonld import FORBIDDEN_TERMS, contains_offer_vocabulary, for_node
 from .lattice import (
     CROISEMENT,
@@ -39,7 +40,9 @@ __all__ = [
     "TERRITOIRE",
     "build",
     "contains_offer_vocabulary",
+    "exclusive_grant",
     "for_node",
+    "is_exclusive_holder",
     "generate",
     "llms_txt",
     "markdown",

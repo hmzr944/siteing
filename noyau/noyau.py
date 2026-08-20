@@ -108,6 +108,11 @@ class Noyau:
     claims: list[Claim] = field(default_factory=list)
     legal_id: str | None = None
     contact_url: str | None = None
+    # Clé de créneau, avec category: identifie l'entreprise dans le registre
+    # des exclusivités (citation_audit.creneau). Valeur par défaut alignée
+    # sur l'unique référentiel géographique existant aujourd'hui; à fournir
+    # explicitement dès qu'un second référentiel apparaît.
+    zone: str = "Bordeaux Métropole"
 
     def __post_init__(self) -> None:
         ids = [c.id for c in self.chantiers]
@@ -337,6 +342,7 @@ class Noyau:
             claims=[Claim.from_dict(raw) for raw in data.get("claims", ())],
             legal_id=data.get("legal_id"),
             contact_url=data.get("contact_url"),
+            zone=data.get("zone", "Bordeaux Métropole"),
         )
 
     @classmethod
