@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 
-from .catalogue import Nature, load_all, merge
+from .catalogue import Nature, load_all, merge, merge_keywords
 from .territoire import Territoire
 
 # Provenance de l'information. Elle ne dit pas si c'est vrai, elle dit d'où ça
@@ -47,7 +47,12 @@ DOCUMENTED = frozenset({FROM_INVOICE, FROM_QUOTE})
 # Noyau sert n'importe quel métier qui documente des interventions datées,
 # localisées et facturées, sans changer une ligne de ce module.
 _METIERS_DIR = Path(__file__).resolve().parent.parent / "metiers"
-NATURES, TYPOLOGIES = merge(load_all(_METIERS_DIR))
+_CATALOGUES = load_all(_METIERS_DIR)
+NATURES, TYPOLOGIES = merge(_CATALOGUES)
+# Index mot-clé -> code, pour ingestion.lexique.parse_nature. Vit ici, à côté
+# de NATURES, pour la même raison: un métier de plus ne doit demander qu'un
+# fichier JSON, jamais une modification du code de résolution.
+NATURE_KEYWORDS = merge_keywords(_CATALOGUES)
 
 
 @dataclass(frozen=True)

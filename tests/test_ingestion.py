@@ -92,6 +92,14 @@ class TestOtherResolvers(unittest.TestCase):
         self.assertEqual(parse_surface("130 mètres carrés").value, 130.0)
         self.assertFalse(parse_surface("une grande salle de bain").ok)
 
+    def test_other_metiers_units_resolve_too(self):
+        """La taille n'est pas seulement une surface: un chauffe-eau se
+        compte en litres, une chaudière en kilowatts. Même champ, autre
+        unité parlée — pas un résolveur par métier."""
+        self.assertEqual(parse_surface("150 litres").value, 150.0)
+        self.assertEqual(parse_surface("20 kw").value, 20.0)
+        self.assertEqual(parse_surface("15 kilowatts").value, 15.0)
+
     def test_relative_dates(self):
         self.assertEqual(parse_date("terminé hier", TODAY).value, date(2026, 8, 15))
         self.assertEqual(parse_date("ce matin", TODAY).value, TODAY)
@@ -135,6 +143,46 @@ class TestNature(unittest.TestCase):
         resolved = parse_nature("la salle de bain et la cuisine")
         self.assertFalse(resolved.ok)
         self.assertIn("plusieurs natures", resolved.note)
+
+
+class TestNatureAcrossMetiers(unittest.TestCase):
+    """Le résolveur ne connaît aucun métier en particulier: ce qu'il sait
+    vient de la fusion de metiers/*.json (noyau.catalogue.merge_keywords).
+    Ces tests couvrent un second métier pour vérifier que rien, dans
+    ingestion, n'a été pensé seulement pour la rénovation."""
+
+    def test_a_second_metiers_vocabulary_resolves_without_touching_ingestion(self):
+        for text, code in (
+            ("j'ai changé le chauffe-eau", "chauffe-eau"),
+            ("remplacement du cumulus", "chauffe-eau"),
+            ("installation d'une chaudière", "chaudiere"),
+            ("un débouchage", "debouchage"),
+            ("recherche de fuite", "recherche-fuite"),
+        ):
+            self.assertEqual(parse_nature(text).value, code, text)
+
+    def test_a_keyword_shared_by_two_metiers_resolves_nothing(self):
+        """« salle d'eau » désigne une rénovation ou une intervention de
+        plomberie selon le métier: aucun des deux ne doit gagner par hasard,
+        le mot-clé disputé est retiré de l'index plutôt qu'arbitré."""
+        resolved = parse_nature("il faut refaire la salle d'eau")
+        self.assertFalse(resolved.ok)
+
+    def test_an_unambiguous_phrase_from_the_second_metier_still_resolves(self):
+        """Le retrait ne porte que sur le mot-clé disputé, pas sur toute la
+        nature qui le contient."""
+        self.assertEqual(
+            parse_nature("plomberie de salle d'eau chez le client").value,
+            "salle-d-eau-plomberie",
+        )
+
+    def test_a_short_keyword_does_not_match_inside_a_longer_word(self):
+        """Trouvé en ajoutant la plomberie: « ite » (isolation thermique par
+        l'extérieur) matchait en sous-chaîne à l'intérieur de « fu-ite »,
+        faisant échouer la résolution d'un métier qui n'a rien à voir avec
+        l'isolation. Un mot-clé ne compte qu'en mot entier."""
+        self.assertEqual(parse_nature("recherche de fuite").value, "recherche-fuite")
+        self.assertEqual(parse_nature("une fuite d'eau").value, "recherche-fuite")
 
 
 class TestTerritoire(unittest.TestCase):

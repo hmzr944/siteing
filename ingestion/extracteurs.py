@@ -48,15 +48,15 @@ class HeuristicExtractor:
         for pattern, kind in (
             (r"\d[\d\s]*(?:plaques?|briques?|k|keuros?|bars?|euros?|€)", "montant"),
             (r"\d[\d\s]*(?:jours?|semaines?|mois)", "duree"),
-            (r"\d[\d\s.,]*(?:m2|m²|metres? carres?|ml)", "surface"),
+            (r"\d[\d\s.,]*(?:m2|m²|metres? carres?|ml|litres?|kw|kilowatts?)", "surface"),
             (r"\d{1,2}[/-]\d{1,2}(?:[/-]\d{2,4})?", "date"),
             (r"\b(?:hier|avant-hier|ce matin|aujourd'hui|semaine derniere|mois dernier)\b", "date"),
         ):
             for match in re.finditer(pattern, lowered):
                 found.append(Span(kind, match.group(0)))
 
-        for keyword, _code in NATURE_KEYWORDS:
-            if keyword in lowered:
+        for keyword in NATURE_KEYWORDS:
+            if re.search(rf"\b{re.escape(keyword)}\b", lowered):
                 found.append(Span("nature", keyword))
         if not any(s.kind == "nature" for s in found):
             for term in VAGUE_TERMS:

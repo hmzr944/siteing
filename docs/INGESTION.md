@@ -136,12 +136,19 @@ d'échec réseau.
 1. **La transcription.** On part d'un texte déjà transcrit. Le passage audio vers
    texte sur un chantier bruyant, avec accent et jargon, est un problème distinct
    et non traité ici.
-2. **Le dialogue.** La question est produite, la réponse n'est pas encore
-   réinjectée. Il manque la reprise du candidat avec la réponse, et sa
-   persistance entre deux messages.
-3. **Les pièces.** Passer un chantier de `vocal` à `facture` suppose de recevoir
+2. **Les pièces.** Passer un chantier de `vocal` à `facture` suppose de recevoir
    et contrôler la pièce. C'est le maillon qui débloque les budgets, et c'est le
    prochain goulot.
+
+~~Le dialogue~~ — fait (section 9). ~~Un seul métier~~ — fait aussi : le
+vocabulaire de nature (`parse_nature`) ne connaît plus la rénovation en
+particulier, il vient de la fusion de `metiers/*.json`
+(`noyau.catalogue.merge_keywords`). Ajouter un métier à l'ingestion demande un
+fichier JSON, jamais une ligne de ce paquet. Un mot-clé disputé par deux
+métiers (« salle d'eau » en rénovation et en plomberie) est retiré de l'index
+plutôt qu'arbitré au hasard — la même règle que pour les codes de nature dans
+`noyau.catalogue.merge()`, en plus tolérant : une ambiguïté de langage entre
+métiers est plausible, elle ne doit pas empêcher les catalogues de charger.
 
 ---
 

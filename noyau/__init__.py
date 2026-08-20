@@ -20,7 +20,7 @@ gouvernent la conception, et chacun a son module:
 
 from .budget import BudgetBloque, BudgetConstate, MIN_CHANTIERS, aggregate
 from .catalogue import Catalogue
-from .chantier import NATURES, TYPOLOGIES, Chantier, Nature, TerritoirePreuve
+from .chantier import NATURE_KEYWORDS, NATURES, TYPOLOGIES, Chantier, Nature, TerritoirePreuve
 from .noyau import (
     MIN_CHANTIERS_TERRITOIRE,
     Assertion,
@@ -40,6 +40,7 @@ __all__ = [
     "MIN_CHANTIERS_TERRITOIRE",
     "METROPOLE",
     "Manque",
+    "NATURE_KEYWORDS",
     "NATURES",
     "Nature",
     "Noyau",

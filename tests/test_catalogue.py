@@ -8,7 +8,7 @@ code déjà écrit — seulement un fichier JSON de plus dans ``metiers/``.
 import unittest
 from pathlib import Path
 
-from noyau.catalogue import Catalogue, Nature, load_all, merge
+from noyau.catalogue import Catalogue, Nature, load_all, merge, merge_keywords
 
 ROOT = Path(__file__).resolve().parent.parent
 METIERS = ROOT / "metiers"
@@ -60,6 +60,43 @@ class TestMerge(unittest.TestCase):
         self.assertEqual(set(natures), {"x", "y"})
 
 
+class TestMergeKeywords(unittest.TestCase):
+    def test_disjoint_keywords_all_resolve(self):
+        a = make("a", ax={"label": "A x", "unit": "m2", "bands": [[0, None]], "keywords": ["mot-a"]})
+        b = make("b", bx={"label": "B x", "unit": "ml", "bands": [[0, None]], "keywords": ["mot-b"]})
+        index = merge_keywords([a, b])
+        self.assertEqual(index, {"mot-a": "ax", "mot-b": "bx"})
+
+    def test_a_keyword_shared_by_two_natures_resolves_to_neither(self):
+        """Mieux vaut qu'une phrase ne résolve rien et pose une question,
+        qu'une résolution silencieuse et fausse entre deux métiers."""
+        a = make("a", ax={"label": "A x", "unit": "m2", "bands": [[0, None]], "keywords": ["ambigu"]})
+        b = make("b", bx={"label": "B x", "unit": "ml", "bands": [[0, None]], "keywords": ["ambigu"]})
+        index = merge_keywords([a, b])
+        self.assertNotIn("ambigu", index)
+
+    def test_a_disputed_keyword_does_not_break_the_others(self):
+        a = make(
+            "a",
+            ax={"label": "A x", "unit": "m2", "bands": [[0, None]], "keywords": ["ambigu", "sur"]},
+        )
+        b = make(
+            "b",
+            bx={"label": "B x", "unit": "ml", "bands": [[0, None]], "keywords": ["ambigu"]},
+        )
+        index = merge_keywords([a, b])
+        self.assertNotIn("ambigu", index)
+        self.assertEqual(index["sur"], "ax")
+
+    def test_loading_ambiguous_catalogues_never_raises(self):
+        """Contrairement à merge() sur les codes, une ambiguïté de langage
+        naturel entre métiers est plausible: elle ne doit jamais empêcher les
+        catalogues de charger."""
+        a = make("a", ax={"label": "A x", "unit": "m2", "bands": [[0, None]], "keywords": ["x"]})
+        b = make("b", bx={"label": "B x", "unit": "ml", "bands": [[0, None]], "keywords": ["x"]})
+        merge_keywords([a, b])  # ne lève pas
+
+
 class TestBundledCatalogues(unittest.TestCase):
     """Les catalogues réellement livrés avec le dépôt, chargés comme au démarrage."""
 
@@ -76,6 +113,15 @@ class TestBundledCatalogues(unittest.TestCase):
         natures, typologies = merge(load_all(METIERS))
         self.assertGreater(len(natures), 0)
         self.assertGreater(len(typologies), 0)
+
+    def test_bundled_keywords_include_a_deliberate_cross_metier_ambiguity(self):
+        """« salle d'eau » est un cas volontaire: rénovation et plomberie
+        l'emploient toutes les deux pour des choses différentes. Le prouver
+        ici documente que c'est un choix, pas un oubli."""
+        index = merge_keywords(load_all(METIERS))
+        self.assertNotIn("salle d'eau", index)
+        self.assertEqual(index.get("salle de bain"), "salle-de-bain")
+        self.assertEqual(index.get("chauffe-eau"), "chauffe-eau")
 
 
 if __name__ == "__main__":

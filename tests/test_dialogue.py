@@ -185,6 +185,26 @@ class TestAmendments(unittest.TestCase):
         )
 
 
+class TestOtherMetiers(unittest.TestCase):
+    """La boucle de dialogue n'a jamais été écrite pour la rénovation en
+    particulier: elle appelle des résolveurs, et ceux-ci savent parler
+    plomberie depuis que metiers/plomberie.json existe."""
+
+    def test_a_plumbing_job_is_captured_in_one_message(self):
+        talk = dialogue()
+        reply = talk.receive(
+            "j'ai changé un chauffe-eau à Caudéran, 150 litres, "
+            "ça a coûté 12 plaques",
+            TODAY,
+        )
+        self.assertEqual(reply.kind, REGISTERED)
+        chantier = talk.chantiers()[0]
+        self.assertEqual(chantier["nature"], "chauffe-eau")
+        self.assertEqual(chantier["territoire"], "cauderan")
+        self.assertEqual(chantier["size"], 150.0)
+        self.assertEqual(chantier["budget_eur"], 12000.0)
+
+
 class TestGhostCandidates(unittest.TestCase):
     def test_pleasantries_create_nothing(self):
         talk = dialogue()

@@ -21,7 +21,7 @@ import unicodedata
 from dataclasses import dataclass
 from datetime import date, timedelta
 
-from noyau.chantier import NATURES
+from noyau.chantier import NATURE_KEYWORDS, NATURES
 
 
 @dataclass(frozen=True)
@@ -159,11 +159,22 @@ def parse_duree(text: str) -> Resolved:
 
 # -- surfaces ------------------------------------------------------------------
 
+# Unités reconnues. Ce n'est pas encore dérivé des catalogues de métier
+# (contrairement à NATURE_KEYWORDS ci-dessous): un métier qui introduirait une
+# unité vraiment nouvelle (autre que surface, linéaire, volume ou puissance)
+# demanderait d'étendre cette liste. Limitation connue, pas cachée.
 def parse_surface(text: str) -> Resolved:
-    """Surface ou linéaire, dans l'unité parlée."""
+    """Taille d'une prestation, dans l'unité parlée.
+
+    Couvre la surface et le linéaire (rénovation), mais aussi le volume et la
+    puissance (plomberie, chauffage) : c'est le même champ de mesure pour
+    n'importe quel métier, seule l'unité parlée change.
+    """
     lowered = plain(text)
     match = re.search(
-        rf"{_NUM}\s*(m2|m²|metres? carres?|metres? lineaires?|ml)\b", lowered
+        rf"{_NUM}\s*"
+        r"(m2|m²|metres? carres?|metres? lineaires?|ml|litres?|kw|kilowatts?)\b",
+        lowered,
     )
     if match:
         amount = _to_float(match.group(1))
@@ -175,30 +186,27 @@ def parse_surface(text: str) -> Resolved:
 
 # -- natures -------------------------------------------------------------------
 
-# Mots-clés vers code de nature. L'ordre compte: on teste du plus spécifique au
-# plus général, sinon « rénovation de salle de bain » tomberait dans la
-# rénovation globale.
-NATURE_KEYWORDS: tuple[tuple[str, str], ...] = (
-    ("salle de bain", "salle-de-bain"),
-    ("salle d'eau", "salle-de-bain"),
-    ("salle de douche", "salle-de-bain"),
-    ("sdb", "salle-de-bain"),
-    ("cuisine", "cuisine"),
-    ("isolation par l'exterieur", "isolation-exterieure"),
-    ("isolation exterieure", "isolation-exterieure"),
-    ("ite", "isolation-exterieure"),
-    ("ravalement", "ravalement-pierre"),
-    ("facade", "ravalement-pierre"),
-    ("pierre de taille", "ravalement-pierre"),
-    ("verriere", "verriere"),
-    ("renovation complete", "renovation-globale"),
-    ("renovation globale", "renovation-globale"),
-    ("renovation totale", "renovation-globale"),
-    ("rehabilitation", "renovation-globale"),
-)
+# NATURE_KEYWORDS vient de noyau.chantier: fusion des mots-clés déclarés par
+# chaque métier dans metiers/*.json. Ce résolveur ne connaît donc aucun métier
+# en particulier — ajouter un métier ne demande jamais de toucher ce fichier,
+# seulement son catalogue JSON. Un mot-clé disputé par deux métiers (« salle
+# d'eau » en rénovation et en plomberie, par exemple) a déjà été retiré de
+# l'index par noyau.catalogue.merge_keywords: il ne résout jamais rien plutôt
+# que de deviner lequel des deux métiers est en cause.
 
 # Termes qui annoncent un chantier sans dire lequel. Ils ne résolvent rien.
 VAGUE_TERMS = ("renovation", "renover", "travaux", "chantier", "refait", "refaire")
+
+
+def _keyword_in(keyword: str, lowered: str) -> bool:
+    """Un mot-clé compte s'il apparaît en mot entier, jamais en sous-chaîne.
+
+    Un simple ``in`` ferait matcher l'abréviation « ite » (isolation
+    thermique par l'extérieur) à l'intérieur de « fu-ite »: un métier de plus
+    dans le catalogue suffirait alors à faire dérailler un autre métier, sans
+    qu'aucun des deux ne l'ait jamais demandé.
+    """
+    return re.search(rf"\b{re.escape(keyword)}\b", lowered) is not None
 
 
 def parse_nature(text: str) -> Resolved:
@@ -210,9 +218,11 @@ def parse_nature(text: str) -> Resolved:
     comme un fait.
     """
     lowered = plain(text)
-    hits = {code for keyword, code in NATURE_KEYWORDS if keyword in lowered}
+    hits = {code for keyword, code in NATURE_KEYWORDS.items() if _keyword_in(keyword, lowered)}
     if len(hits) == 1:
-        keyword = next(k for k, c in NATURE_KEYWORDS if c in hits and k in lowered)
+        keyword = next(
+            k for k, c in NATURE_KEYWORDS.items() if c in hits and _keyword_in(k, lowered)
+        )
         return Resolved(hits.pop(), 0.9, f"« {keyword} »")
     if len(hits) > 1:
         return Resolved.refuse(

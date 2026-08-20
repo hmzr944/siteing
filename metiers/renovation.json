@@ -5,33 +5,42 @@
     "salle-de-bain": {
       "label": "Rénovation de salle de bain",
       "unit": "m2",
-      "bands": [[0, 5], [5, 8], [8, 12], [12, null]]
+      "bands": [[0, 5], [5, 8], [8, 12], [12, null]],
+      "keywords": ["salle de bain", "salle d'eau", "salle de douche", "sdb"]
     },
     "cuisine": {
       "label": "Rénovation de cuisine",
       "unit": "m2",
-      "bands": [[0, 8], [8, 14], [14, null]]
+      "bands": [[0, 8], [8, 14], [14, null]],
+      "keywords": ["cuisine"]
     },
     "renovation-globale": {
       "label": "Rénovation globale",
       "unit": "m2",
-      "bands": [[0, 60], [60, 100], [100, 150], [150, null]]
+      "bands": [[0, 60], [60, 100], [100, 150], [150, null]],
+      "keywords": [
+        "renovation complete", "renovation globale", "renovation totale",
+        "rehabilitation"
+      ]
     },
     "isolation-exterieure": {
       "label": "Isolation par l'extérieur",
       "unit": "m2",
-      "bands": [[0, 80], [80, 140], [140, null]]
+      "bands": [[0, 80], [80, 140], [140, null]],
+      "keywords": ["isolation par l'exterieur", "isolation exterieure", "ite"]
     },
     "ravalement-pierre": {
       "label": "Ravalement de façade en pierre de taille",
       "unit": "m2",
-      "bands": [[0, 60], [60, 120], [120, null]]
+      "bands": [[0, 60], [60, 120], [120, null]],
+      "keywords": ["ravalement", "facade", "pierre de taille"]
     },
     "verriere": {
       "label": "Pose d'une verrière d'atelier",
       "unit": "ml",
       "bands": [[0, 2], [2, 4], [4, null]],
-      "unit_price_meaningful": false
+      "unit_price_meaningful": false,
+      "keywords": ["verriere"]
     }
   },
   "typologies": {

@@ -40,6 +40,12 @@ class Nature:
     # débouchage de canalisation se compte à l'intervention: publier un prix
     # au mètre y serait trompeur.
     unit_price_meaningful: bool = True
+    # Formulations parlées qui désignent cette nature (déjà passées par
+    # ``ingestion.lexique.plain``: sans accent, en minuscule). C'est ce qui
+    # permet à ``ingestion.parse_nature`` de reconnaître n'importe quel
+    # métier sans jamais toucher au code de l'ingestion: le vocabulaire vit
+    # avec le catalogue, pas dans le résolveur.
+    keywords: tuple[str, ...] = ()
 
     def band_of(self, size: float | None) -> str | None:
         """Étiquette de la bande de taille, ou ``None`` si la taille est inconnue."""
@@ -69,6 +75,7 @@ class Catalogue:
                 unit=raw["unit"],
                 bands=tuple(tuple(b) for b in raw["bands"]),
                 unit_price_meaningful=raw.get("unit_price_meaningful", True),
+                keywords=tuple(raw.get("keywords", ())),
             )
             for code, raw in data.get("natures", {}).items()
         }
@@ -112,3 +119,27 @@ def merge(catalogues: list[Catalogue]) -> tuple[dict[str, Nature], dict[str, str
 def load_all(directory: str | Path) -> list[Catalogue]:
     """Charge tous les catalogues d'un dossier, triés par nom de fichier."""
     return [Catalogue.load(p) for p in sorted(Path(directory).glob("*.json"))]
+
+
+def merge_keywords(catalogues: list[Catalogue]) -> dict[str, str]:
+    """Index mot-clé -> code de nature, tous métiers confondus.
+
+    Un mot-clé disputé par deux natures différentes (deux métiers qui
+    emploient la même formulation pour des choses distinctes — « salle
+    d'eau » pour une rénovation ou pour une intervention de plomberie) est
+    **retiré** plutôt qu'attribué au hasard: mieux vaut que la phrase ne
+    résolve rien et déclenche une question, qu'une résolution silencieuse et
+    fausse. Contrairement aux codes de nature (``merge``), on ne lève pas
+    d'exception ici: une ambiguïté de langage naturel entre métiers est
+    plausible et ne doit pas empêcher les catalogues de charger.
+    """
+    owners: dict[str, str] = {}
+    ambiguous: set[str] = set()
+    for catalogue in catalogues:
+        for code, nature in catalogue.natures.items():
+            for keyword in nature.keywords:
+                if keyword in owners and owners[keyword] != code:
+                    ambiguous.add(keyword)
+                else:
+                    owners[keyword] = code
+    return {k: v for k, v in owners.items() if k not in ambiguous}
