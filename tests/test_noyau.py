@@ -119,6 +119,21 @@ class TestTerritoire(unittest.TestCase):
         with self.assertRaises(ValueError):
             Referentiel([Territoire("a", "Alpha", "quartier", parent="fantome")])
 
+    def test_top_is_the_root_of_the_hierarchy(self):
+        self.assertEqual(self.ref.top().code, "bdx-metropole")
+
+    def test_top_refuses_a_referentiel_without_exactly_one_root(self):
+        """C'est ``top()`` qui fournit la zone par défaut d'un Noyau — donc sa
+        position dans le registre des créneaux. Une racine ambiguë ne doit
+        jamais se traduire par une devinette silencieuse."""
+        with self.assertRaises(ValueError):
+            Referentiel([
+                Territoire("a", "Alpha", "quartier"),
+                Territoire("b", "Beta", "quartier"),
+            ]).top()
+        with self.assertRaises(ValueError):
+            Referentiel([Territoire("a", "Alpha", "quartier", parent="a")]).top()
+
 
 # -- chantier -----------------------------------------------------------------
 
@@ -264,6 +279,18 @@ class TestBudget(unittest.TestCase):
 class TestNoyau(unittest.TestCase):
     def setUp(self):
         self.core = core()
+
+    def test_zone_is_deduced_from_the_referentiel_root_by_default(self):
+        """Aucune ville codée en dur: la zone vient du référentiel donné, pas
+        d'une chaîne figée dans noyau.py — sinon un Noyau ailleurs qu'à
+        Bordeaux se retrouverait publié sous le mauvais nom de zone."""
+        self.assertEqual(self.core.zone, "Bordeaux Métropole")
+
+    def test_an_explicit_zone_is_respected(self):
+        raw = json.loads(NOYAU.read_text(encoding="utf-8"))
+        raw["zone"] = "Zone personnalisée"
+        core_custom = Noyau.from_dict(raw, referentiel())
+        self.assertEqual(core_custom.zone, "Zone personnalisée")
 
     def test_a_chantier_outside_the_referential_is_refused(self):
         raw = json.loads(NOYAU.read_text(encoding="utf-8"))

@@ -347,6 +347,40 @@ class TestMultiMetier(unittest.TestCase):
         self.assertGreater(report["pages"], 0)
 
 
+class TestMultiZone(unittest.TestCase):
+    """Ce module ne doit rien connaître de Bordeaux en particulier.
+
+    Régression directe: cinq endroits de ``surfaces/`` écrivaient « Bordeaux
+    Métropole » ou « Bordeaux » en dur comme repli — invisible tant qu'un
+    seul référentiel existait, faux dès qu'une seconde ville arrive (la même
+    classe de bug que ``TestMultiMetier`` ci-dessus, côté géographie).
+    """
+
+    def lyonnais(self) -> Noyau:
+        return Noyau.load(
+            ROOT_DIR / "noyaux" / "renov-lyon.json",
+            Referentiel.load(ROOT_DIR / "referentiels" / "lyon.json"),
+        )
+
+    def test_zone_is_lyon_not_bordeaux(self):
+        self.assertEqual(self.lyonnais().zone, "Métropole de Lyon")
+
+    def test_no_bordeaux_leaks_into_any_rendered_surface(self):
+        lyon_core = self.lyonnais()
+        nodes = build(lyon_core, TODAY)
+        self.assertTrue(nodes)
+        for node in nodes:
+            self.assertNotIn("Bordeaux", str(for_node(lyon_core, node, TODAY)))
+            self.assertNotIn("Bordeaux", page(lyon_core, node, nodes, TODAY))
+            self.assertNotIn("Bordeaux", markdown(lyon_core, node, TODAY))
+        self.assertNotIn("Bordeaux", llms_txt(lyon_core, "https://exemple.fr", nodes))
+
+    def test_a_full_site_generates_for_a_different_city(self):
+        with TemporaryDirectory() as tmp:
+            report = generate(self.lyonnais(), "https://croix-rousse-renovation.fr", tmp, TODAY)
+        self.assertGreater(report["pages"], 0)
+
+
 class TestExclusivite(unittest.TestCase):
     """La seule chose qui distingue deux Noyaux par ailleurs identiques.
 

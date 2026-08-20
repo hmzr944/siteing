@@ -151,6 +151,25 @@ class Referentiel:
     def at_level(self, level: str) -> list[Territoire]:
         return [t for t in self.territoires if t.level == level]
 
+    def top(self) -> Territoire:
+        """Le territoire le plus englobant: celui sans parent.
+
+        Une entreprise est ancrée dans une seule zone à la fois — un
+        référentiel bien formé n'a donc qu'une racine, que ce soit une
+        métropole ou une simple commune. Zéro ou plusieurs racines lèvent une
+        erreur plutôt que de deviner laquelle nommer: c'est ce nom qui sert de
+        zone par défaut à un Noyau (``Noyau.zone``), donc à sa position dans
+        le registre des créneaux — une mauvaise devinette y publierait une
+        exclusivité sur la mauvaise ville.
+        """
+        roots = [t for t in self.territoires if t.parent is None]
+        if len(roots) != 1:
+            raise ValueError(
+                "le référentiel doit avoir exactement une racine (territoire "
+                f"sans parent), en a {len(roots)}: {sorted(r.code for r in roots)}"
+            )
+        return roots[0]
+
     @classmethod
     def from_dict(cls, data: dict) -> "Referentiel":
         return cls(

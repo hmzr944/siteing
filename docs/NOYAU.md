@@ -212,24 +212,26 @@ Un invariant testé : **publié et manques ne se recouvrent jamais.**
 
 ---
 
-## 7. Ce qui reste à construire
+## 7. État de la généralisation
 
-1. **L'ingestion.** Le Noyau est aujourd'hui un fichier tenu à la main. Il manque
-   la chaîne vocal et photo vers assertions candidates, avec provenance et
-   confiance, jamais d'écriture directe.
-2. **Le niveau engageant.** Le modèle distingue déclaré et vérifié ; il manque le
-   troisième niveau, celui que l'entreprise **engage** avec conséquence, seul
-   utilisable par un agent qui transacte.
-3. **Les surfaces.** Les assertions sont structurées mais pas encore rendues en
-   schema.org, fiche locale, ni point d'accès interrogeable.
-4. **Les autres verticales.** ~~Fait.~~ Les natures et les bandes ne sont plus
+1. ~~L'ingestion.~~ Fait — voir `docs/INGESTION.md` : vocal et photo vers
+   assertions candidates, avec provenance et confiance, jamais d'écriture
+   directe.
+2. ~~Les surfaces.~~ Fait — voir `docs/SURFACES.md` : treillis de pages,
+   schema.org, robots.txt, llms.txt, miroirs Markdown.
+3. **Les autres métiers.** Fait. Les natures et les bandes ne sont plus
    codées en dur pour la rénovation : elles vivent dans `metiers/*.json`, un
-   fichier par métier, chargés et fusionnés par `noyau.catalogue`. Le noyau
-   générique (territoire, provenance, seuils, distribution) et le vocabulaire
-   métier sont désormais découplés au même titre — voir
-   `tools/demo_multi_metier.py`, qui publie une rénovation
-   (`atelier-ferrand.json`) et une plomberie (`aqua-bordeaux.json`) avec
-   exactement le même code, aucune branche par métier. Ajouter un métier ne
-   demande qu'un fichier JSON de plus dans `metiers/`, avec des codes de
-   nature qui ne collisionnent pas avec ceux déjà pris (`merge()` refuse la
-   collision plutôt que de l'écraser silencieusement).
+   fichier par métier, chargés et fusionnés par `noyau.catalogue`. Ajouter un
+   métier ne demande qu'un fichier JSON de plus, avec des codes de nature qui
+   ne collisionnent pas avec ceux déjà pris (`merge()` refuse la collision
+   plutôt que de l'écraser silencieusement).
+4. **Les autres villes.** Fait. Aucune ville n'est plus codée en dur : la
+   zone d'un Noyau (`Noyau.zone`) se déduit de la racine du référentiel
+   fourni (`Referentiel.top()`) si elle n'est pas donnée explicitement. Un
+   référentiel de plus dans `referentiels/` suffit — `tools/demo_universel.py`
+   publie trois Noyaux (rénovation à Bordeaux, plomberie à Bordeaux,
+   rénovation à Lyon) avec exactement le même code, sans une seule branche
+   par métier ni par ville.
+5. **Le niveau engageant.** Toujours à construire. Le modèle distingue
+   déclaré et vérifié ; il manque le troisième niveau, celui que l'entreprise
+   **engage** avec conséquence, seul utilisable par un agent qui transacte.

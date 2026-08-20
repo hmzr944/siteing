@@ -52,7 +52,7 @@ def _organisation(core: Noyau, today: date, registry: Registry | None = None) ->
         "@id": f"{core.contact_url or ''}#entreprise",
         "name": core.name,
         "description": (
-            f"{core.category.capitalize()} intervenant à Bordeaux Métropole, "
+            f"{core.category.capitalize()} intervenant à {core.zone}, "
             "dont les chantiers, budgets constatés et qualifications sont "
             "publiés et vérifiés."
         ),

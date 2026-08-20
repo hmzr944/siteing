@@ -93,7 +93,7 @@ def build(core: Noyau, today: date | None = None) -> list[Node]:
             kind=ROOT,
             slug="index",
             title=core.name,
-            question=f"Quelle {core.category} choisir à Bordeaux ?",
+            question=f"Quelle {core.category} choisir à {core.zone} ?",
             chantiers=list(core.chantiers),
         )
     ]

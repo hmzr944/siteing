@@ -109,10 +109,11 @@ class Noyau:
     legal_id: str | None = None
     contact_url: str | None = None
     # Clé de créneau, avec category: identifie l'entreprise dans le registre
-    # des exclusivités (citation_audit.creneau). Valeur par défaut alignée
-    # sur l'unique référentiel géographique existant aujourd'hui; à fournir
-    # explicitement dès qu'un second référentiel apparaît.
-    zone: str = "Bordeaux Métropole"
+    # des exclusivités (citation_audit.creneau). Laissé vide, elle se déduit
+    # du référentiel géographique fourni (sa racine, métropole ou commune) —
+    # jamais d'une ville codée en dur, pour rester valable dans n'importe
+    # quelle zone du pays sans toucher ce fichier.
+    zone: str | None = None
 
     def __post_init__(self) -> None:
         ids = [c.id for c in self.chantiers]
@@ -124,6 +125,8 @@ class Noyau:
             # preuve invérifiable: on refuse à la construction plutôt que de
             # publier une localisation inventée.
             self.referentiel.get(chantier.territoire)
+        if self.zone is None:
+            self.zone = self.referentiel.top().name
 
     # -- implantation territoriale -------------------------------------------
 
@@ -342,7 +345,7 @@ class Noyau:
             claims=[Claim.from_dict(raw) for raw in data.get("claims", ())],
             legal_id=data.get("legal_id"),
             contact_url=data.get("contact_url"),
-            zone=data.get("zone", "Bordeaux Métropole"),
+            zone=data.get("zone"),
         )
 
     @classmethod

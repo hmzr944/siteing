@@ -119,7 +119,7 @@ def _facts_block(
 
     if node.chantiers:
         where = (
-            f" {node.territoire.locative()}" if node.territoire else " à Bordeaux Métropole"
+            f" {node.territoire.locative()}" if node.territoire else f" à {core.zone}"
         )
         blocks.append(
             f'<p class="fact"><strong>{len(node.chantiers)} chantiers réalisés'
@@ -224,7 +224,7 @@ def page(
     heading = node.title if node.kind != ROOT else core.name
     description = (
         f"{len(node.chantiers)} chantiers documentés"
-        + (f" {node.territoire.locative()}" if node.territoire else " à Bordeaux")
+        + (f" {node.territoire.locative()}" if node.territoire else f" à {core.zone}")
         + f". {node.question}"
     )
 

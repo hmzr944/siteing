@@ -117,7 +117,7 @@ def markdown(
         ]
 
     if node.chantiers:
-        where = node.territoire.locative() if node.territoire else "à Bordeaux Métropole"
+        where = node.territoire.locative() if node.territoire else f"à {core.zone}"
         lines += [
             f"**{len(node.chantiers)} chantiers réalisés {where}**, dont "
             f"{node.documented} adossés à une facture ou un devis signé. "
@@ -169,7 +169,7 @@ def llms_txt(
     lines = [
         f"# {core.name}",
         "",
-        f"> {core.category.capitalize()} à Bordeaux Métropole. Chantiers, budgets "
+        f"> {core.category.capitalize()} à {core.zone}. Chantiers, budgets "
         "constatés et qualifications publiés et contrôlés sur pièces.",
         "",
     ]
