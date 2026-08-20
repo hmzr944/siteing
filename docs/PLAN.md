@@ -7,8 +7,14 @@
 ## 1. La décision
 
 Nous construisons **Source Primaire** : l'opérateur qui rend une entreprise
-citable par les moteurs de réponse, mesure sa Part de Citation, et ne vend ce
-créneau qu'à **une seule entreprise par catégorie et par zone**.
+citable par les moteurs de réponse, mesure sa Part de Citation, et réserve la
+**position vérifiée exclusive** d'une catégorie et d'une zone à une seule
+entreprise à la fois.
+
+Le Noyau lui-même — le dossier vérifié, sa publication — n'est plus réservé à
+qui paie l'exclusivité : c'est le §3 qui explique pourquoi (un palier gratuit
+et un forfait à 19 €/mois ouvrent le registre à toute entreprise, l'exclusivité
+reste un palier au-dessus, rare et payant).
 
 Pourquoi celui-là plutôt que Cote (notation) ou Confluence (réseau mutualisé) :
 
@@ -27,40 +33,52 @@ finance et débloque la suivante.
 
 ## 2. Ce que nous vendons
 
-Pas un site. Pas du contenu. **Un loyer de position** sur un créneau rare.
+Pas un site. Pas du contenu. **La donnée vérifiée d'abord, la position rare
+ensuite.**
 
-Le livrable en régime, chaque mois :
+Le livrable, du gratuit à l'exclusif :
 
 1. **Le Dossier de Vérité** — référentiel machine-lisible de l'entreprise (offre,
-   prix, délais, zones, capacités, garanties, preuves), maintenu à jour et exposé
-   dans les formats que consomment les agents.
+   prix, délais, zones, capacités, garanties, preuves), constitué dès
+   l'inscription, quel que soit le palier. Ce qui change avec le palier n'est
+   pas la qualité du dossier, c'est sa **distribution**.
 2. **La vérification par tiers** — chaque affirmation contrôlée sur pièces. C'est
-   la partie qu'un logiciel en self-serve ne peut structurellement pas produire.
-3. **La distribution** — travail d'opérateur sur les corpus qui alimentent les
-   réponses : bases sectorielles, annuaires structurés, sources citées,
-   partenariats de données.
-4. **Le relevé de Part de Citation** — panier figé, deux moteurs, réponses
-   archivées. C'est l'unique KPI du contrat.
+   la partie qu'un logiciel en self-serve ne peut structurellement pas produire,
+   et elle est identique sur les trois paliers.
+3. **La distribution** — pages publiques, JSON-LD exposé aux robots, mesure de
+   Part de Citation. **Réservée aux paliers payants** (§3) : un dossier
+   gratuit est constitué et vérifié, mais reste invisible des agents tant
+   qu'il n'est pas distribué.
+4. **La position exclusive** — catégorie × zone, réservée à une seule
+   entreprise, contrainte par le registre (`citation_audit/creneau.py`), pas
+   une promesse orale.
 
 ## 3. Grille tarifaire
 
 | Palier | Prix | Ce qui change | Cible |
 |---|---|---|---|
-| **Socle** | 349 €/mois | dossier vérifié, relevé mensuel, 1 catégorie | TPE, artisan, commerce |
-| **Position** | 749 €/mois | + distribution active, 3 catégories, revue trimestrielle | PME, prestataire multi-services |
-| **Exclusif** | 1 490 €/mois | + **exclusivité contractuelle** catégorie × zone, priorité de traitement | leader local, franchise, e-commerce régional |
+| **Gratuit** | 0 € | dossier constitué et vérifié, **non distribué** (aucune page publique, aucun JSON-LD, aucune mesure) | toute entreprise, sans exception — c'est la couche universelle |
+| **Forfait** | **19 €/mois** | + distribution activée : pages publiques, JSON-LD, relevé de citation périodique | TPE, artisan, indépendant — vendu en self-serve, jamais par appel commercial |
+| **Exclusif** | 990 €/mois | + **position vérifiée exclusive** catégorie × zone, distribution prioritaire, revue trimestrielle | leader local, franchise, e-commerce régional — vendu par le playbook sortant (`docs/VENTE.md`) |
 
-- **Frais d'entrée : 900 €** — constitution du dossier et vérification initiale.
-  Ils qualifient autant qu'ils financent : un dirigeant qui refuse 900 € ne
-  signera pas 749 €/mois.
-- **Commission d'attribution : 5 %** sur la demande entrante tracée.
-- Mix cible : 50 % Socle, 35 % Position, 15 % Exclusif → **ARPU 660 €**.
+- **Frais d'entrée, palier Exclusif seulement : 900 €** — constitution
+  approfondie et vérification initiale. Ils qualifient autant qu'ils
+  financent : un dirigeant qui refuse 900 € ne signera pas 990 €/mois. Le
+  Forfait n'a pas de frais d'entrée : à ce prix, le moindre frein casse la
+  conversion self-serve.
+- Détail du calibrage et de l'unité économique de chaque palier :
+  `docs/ECONOMIE.md`.
 
-L'exclusivité n'est vendue qu'au palier haut, et elle est **réelle** : nous ne
-pouvons techniquement servir qu'un acteur par créneau sans détruire la valeur que
-nous vendons. C'est ce qui rend l'urgence commerciale honnête, et c'est aussi ce
-qui interdit à un concurrent en self-serve de nous copier — son modèle de volume
-est incompatible avec la rareté qui fait notre prix.
+**Le gratuit n'est pas un plafond de fonctionnalités arbitraire, c'est la
+distribution retenue.** Le dossier existe, vérifié, dès l'inscription — il
+n'est simplement pas montré aux agents tant que ce n'est pas payé. C'est le
+même ressort psychologique que l'Audit d'Invisibilité (`docs/VENTE.md` §1) :
+la donnée sur vous existe, la question est qui la contrôle.
+
+**L'exclusivité reste réelle**, comme avant : un seul acteur par créneau,
+contrainte système et non promesse orale — c'est ce qui rend l'urgence
+commerciale honnête sur ce palier, et interdit à un concurrent en self-serve
+de le copier sans en détruire la valeur.
 
 ## 4. Ce qui est construit, et ce qui reste à construire
 
@@ -103,21 +121,26 @@ réécrite en silence) :
 
 ## 5. Économie
 
-Détail et sensibilité dans `docs/ECONOMIE.md`. En résumé, aux hypothèses par
-défaut :
+Détail et sensibilité dans `docs/ECONOMIE.md`. Deux mouvements commerciaux
+distincts, deux unités économiques — les fondre en un ARPU moyen cacherait
+que le Forfait et l'Exclusif ne jouent pas le même rôle :
 
-| | |
-|---|---|
-| ARPU | 660 € |
-| Marge brute mensuelle par client | 529 € |
-| CAC | 2 400 € |
-| Retour sur CAC | 4,5 mois |
-| LTV / CAC | 6,6x |
-| EBITDA mensuel positif | mois 10 |
-| Besoin de financement maximal | ~162 k€ (mois 9) |
+| | Forfait (19 €/mois, self-serve) | Exclusif (990 €/mois, sortant) |
+|---|---|---|
+| Marge brute / client / mois | 13 € | 859 € |
+| CAC | 82 € (effectif, gratuits inclus) | 2 400 € |
+| Retour sur CAC | 6,3 mois | 2,8 mois |
+| LTV / CAC | 2,6x | 14,6x |
+| Rôle | volume, couverture du registre | rentabilité |
 
-Le modèle reste au-dessus de 3x de LTV/CAC jusqu'à **8 % de churn mensuel**. Il
-est contraint par la capacité commerciale, jamais par la demande.
+Combiné : **EBITDA mensuel positif au mois 9**, **cumul positif au mois 17**,
+**besoin de financement maximal ~86 k€ (mois 8)**.
+
+Le Forfait reste sciemment sous le seuil de santé de 3x — ce n'est pas un
+centre de profit autonome à ce prix, et ce n'est pas censé l'être. Le
+mouvement Exclusif, lui, est contraint par la capacité commerciale, jamais
+par la demande ; le mouvement Forfait est contraint par le taux de
+conversion gratuit → payant, la variable la moins connue du modèle.
 
 ## 6. Les trois risques, et ce qu'on fait contre
 
@@ -142,13 +165,21 @@ du statut d'outil de mesure vite — d'où l'ordre de construction ci-dessus.
 
 ## 7. Preuve à 90 jours
 
-Une verticale, une agglomération, et trois chiffres qui décident de la suite :
+Une verticale, une agglomération, et les chiffres qui décident de la suite —
+un par mouvement commercial, parce qu'ils ne se valident pas de la même façon :
 
-| | Cible |
-|---|---|
-| Clients signés | 12 |
-| Part de Citation médiane des clients | ×3 vs relevé initial |
-| Taux audit → rendez-vous | ≥ 8 % |
+| | Cible | Mouvement |
+|---|---|---|
+| Taux de conversion gratuit → Forfait | ≥ 10 % cumulé sur 90 jours | Forfait |
+| Clients Exclusif signés | 4 | Exclusif |
+| Part de Citation médiane des clients payants | ×3 vs relevé initial | les deux |
+| Taux audit → rendez-vous (Exclusif) | ≥ 8 % | Exclusif |
+
+Si la conversion Forfait reste sous 5 %, le palier gratuit se rapproche du
+régime Linktree (`docs/ECONOMIE.md` §0) : il continue de couvrir le
+registre, mais il faut arrêter d'en attendre une contribution à la
+trésorerie et le dire clairement plutôt que de se raconter un modèle qui ne
+tient pas.
 
 Si la Part de Citation ne triple pas, le produit ne fonctionne pas et aucun
 discours ne le sauvera. Si le taux de rendez-vous est sous 5 %, le CAC double et

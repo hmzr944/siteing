@@ -6,6 +6,11 @@
 > que le discours dérive vers ce que nous faisons plutôt que vers ce qu'il perd,
 > le taux s'effondre.
 
+Ce playbook vend le palier **Exclusif** (`docs/PLAN.md` §3) : c'est le seul
+qui justifie un cycle sortant à 2 400 € de CAC. Le palier Gratuit et le
+Forfait à 19 €/mois se vendent en self-serve, sans appel commercial —
+détail et raison dans `docs/ECONOMIE.md` §0.
+
 ## 1. L'Audit d'Invisibilité, arme principale
 
 Panier réduit à 12 questions, un seul moteur, rendu vidéo de 90 secondes. Coût
