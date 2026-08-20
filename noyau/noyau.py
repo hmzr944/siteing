@@ -121,6 +121,8 @@ class Noyau:
         if duplicates:
             raise ValueError(f"chantiers en doublon: {sorted(duplicates)}")
         for chantier in self.chantiers:
+            if chantier.territoire is None:
+                continue
             # Un chantier rattaché à un territoire hors référentiel est une
             # preuve invérifiable: on refuse à la construction plutôt que de
             # publier une localisation inventée.
@@ -134,10 +136,14 @@ class Noyau:
         """Preuves d'implantation, du territoire le mieux couvert au moins couvert.
 
         Un chantier prouve son quartier **et** tous les territoires englobants:
-        intervenir aux Chartrons prouve qu'on intervient à Bordeaux.
+        intervenir aux Chartrons prouve qu'on intervient à Bordeaux. Un
+        chantier sans territoire (mission à distance) ne prouve aucune
+        implantation: il est simplement absent de ce calcul, pas une erreur.
         """
         buckets: dict[str, list[Chantier]] = {}
         for chantier in self.chantiers:
+            if chantier.territoire is None:
+                continue
             codes = [chantier.territoire] + [
                 a.code for a in self.referentiel.ancestors(chantier.territoire)
             ]

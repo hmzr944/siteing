@@ -48,7 +48,7 @@ class HeuristicExtractor:
         for pattern, kind in (
             (r"\d[\d\s]*(?:plaques?|briques?|k|keuros?|bars?|euros?|€)", "montant"),
             (r"\d[\d\s]*(?:jours?|semaines?|mois)", "duree"),
-            (r"\d[\d\s.,]*(?:m2|m²|metres? carres?|ml|litres?|kw|kilowatts?)", "surface"),
+            (r"\d[\d\s.,]*(?:m2|m²|metres? carres?|ml|litres?|kw|kilowatts?|heures?)", "surface"),
             (r"\d{1,2}[/-]\d{1,2}(?:[/-]\d{2,4})?", "date"),
             (r"\b(?:hier|avant-hier|ce matin|aujourd'hui|semaine derniere|mois dernier)\b", "date"),
         ):

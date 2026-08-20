@@ -100,6 +100,15 @@ class TestOtherResolvers(unittest.TestCase):
         self.assertEqual(parse_surface("20 kw").value, 20.0)
         self.assertEqual(parse_surface("15 kilowatts").value, 15.0)
 
+    def test_hours_resolve_as_a_size_for_consulting(self):
+        self.assertEqual(parse_surface("3 heures").value, 3.0)
+
+    def test_days_are_deliberately_not_a_recognised_size_unit(self):
+        """« jour » est déjà pris par parse_duree, et une mission de conseil
+        confond taille et durée: mieux vaut demander explicitement que
+        résoudre en double sur la même phrase."""
+        self.assertFalse(parse_surface("5 jours").ok)
+
     def test_relative_dates(self):
         self.assertEqual(parse_date("terminé hier", TODAY).value, date(2026, 8, 15))
         self.assertEqual(parse_date("ce matin", TODAY).value, TODAY)

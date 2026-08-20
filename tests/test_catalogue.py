@@ -100,11 +100,13 @@ class TestMergeKeywords(unittest.TestCase):
 class TestBundledCatalogues(unittest.TestCase):
     """Les catalogues réellement livrés avec le dépôt, chargés comme au démarrage."""
 
-    def test_at_least_two_metiers_are_bundled(self):
+    def test_at_least_three_metiers_are_bundled(self):
         catalogues = load_all(METIERS)
-        self.assertGreaterEqual(len(catalogues), 2)
-        self.assertIn("renovation", {c.metier for c in catalogues})
-        self.assertIn("plomberie", {c.metier for c in catalogues})
+        self.assertGreaterEqual(len(catalogues), 3)
+        metiers = {c.metier for c in catalogues}
+        self.assertIn("renovation", metiers)
+        self.assertIn("plomberie", metiers)
+        self.assertIn("conseil", metiers)
 
     def test_bundled_catalogues_merge_without_collision(self):
         # Si deux métiers livrés se disputaient un code, ce test échouerait

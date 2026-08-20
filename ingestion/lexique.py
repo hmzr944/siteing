@@ -161,19 +161,28 @@ def parse_duree(text: str) -> Resolved:
 
 # Unités reconnues. Ce n'est pas encore dérivé des catalogues de métier
 # (contrairement à NATURE_KEYWORDS ci-dessous): un métier qui introduirait une
-# unité vraiment nouvelle (autre que surface, linéaire, volume ou puissance)
-# demanderait d'étendre cette liste. Limitation connue, pas cachée.
+# unité vraiment nouvelle (autre que surface, linéaire, volume, puissance ou
+# durée-en-heures) demanderait d'étendre cette liste. Limitation connue, pas
+# cachée.
+#
+# « jour(s) » est volontairement absent de cette liste, alors que le conseil
+# (metiers/conseil.json) mesure sa taille en jours: le mot est déjà pris par
+# parse_duree, et une mission de conseil confond taille et durée (un audit de
+# "3 jours" est aussi bien sa taille que sa durée). Ajouter "jours?" ici ferait
+# resurgir la même phrase dans deux champs à la fois. Le système pose la
+# question plutôt que de deviner lequel des deux compte — refuser plutôt que
+# résoudre en double, la même règle que partout ailleurs dans ce fichier.
 def parse_surface(text: str) -> Resolved:
     """Taille d'une prestation, dans l'unité parlée.
 
-    Couvre la surface et le linéaire (rénovation), mais aussi le volume et la
-    puissance (plomberie, chauffage) : c'est le même champ de mesure pour
-    n'importe quel métier, seule l'unité parlée change.
+    Couvre la surface et le linéaire (rénovation), le volume et la puissance
+    (plomberie, chauffage), la durée en heures (conseil) : c'est le même champ
+    de mesure pour n'importe quel métier, seule l'unité parlée change.
     """
     lowered = plain(text)
     match = re.search(
         rf"{_NUM}\s*"
-        r"(m2|m²|metres? carres?|metres? lineaires?|ml|litres?|kw|kilowatts?)\b",
+        r"(m2|m²|metres? carres?|metres? lineaires?|ml|litres?|kw|kilowatts?|heures?)\b",
         lowered,
     )
     if match:

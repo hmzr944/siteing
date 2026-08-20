@@ -57,15 +57,24 @@ NATURE_KEYWORDS = merge_keywords(_CATALOGUES)
 
 @dataclass(frozen=True)
 class Chantier:
-    """Une intervention réalisée, datée et localisée."""
+    """Une intervention réalisée, datée — et le plus souvent localisée.
+
+    ``territoire`` reste optionnel: un chantier de rénovation n'existe pas
+    sans quartier, mais une mission de conseil menée à distance n'a pas de
+    lieu à prouver. Le laisser vide ne dispense de rien d'autre — la preuve
+    par pièce, le seuil de comparabilité et le budget constaté s'appliquent
+    identiquement. Ce que ça change: ce chantier ne participera à aucune
+    preuve d'implantation ni page de territoire (``Noyau.territoires()``),
+    puisqu'il n'y a rien à y localiser.
+    """
 
     id: str
     nature: str
-    territoire: str                    # code du référentiel, jamais une saisie libre
     completed_on: date
     budget_eur: float
     provenance: str
-    size: float | None = None          # surface ou linéaire, dans l'unité de la nature
+    territoire: str | None = None      # code du référentiel, jamais une saisie libre
+    size: float | None = None          # dans l'unité de la nature (m2, jour, litre...)
     typologie: str | None = None
     duration_days: int | None = None
     reference: str | None = None       # numéro de facture ou de devis
@@ -126,7 +135,7 @@ class Chantier:
         return cls(
             id=data["id"],
             nature=data["nature"],
-            territoire=data["territoire"],
+            territoire=data.get("territoire"),
             completed_on=date.fromisoformat(data["completed_on"]),
             budget_eur=float(data["budget_eur"]),
             provenance=data["provenance"],

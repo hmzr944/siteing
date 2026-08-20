@@ -228,10 +228,26 @@ Un invariant testé : **publié et manques ne se recouvrent jamais.**
 4. **Les autres villes.** Fait. Aucune ville n'est plus codée en dur : la
    zone d'un Noyau (`Noyau.zone`) se déduit de la racine du référentiel
    fourni (`Referentiel.top()`) si elle n'est pas donnée explicitement. Un
-   référentiel de plus dans `referentiels/` suffit — `tools/demo_universel.py`
-   publie trois Noyaux (rénovation à Bordeaux, plomberie à Bordeaux,
-   rénovation à Lyon) avec exactement le même code, sans une seule branche
-   par métier ni par ville.
-5. **Le niveau engageant.** Toujours à construire. Le modèle distingue
+   référentiel de plus dans `referentiels/` suffit.
+5. **Les entreprises sans ancrage local.** Fait. `Chantier.territoire` est
+   optionnel : une mission de conseil à distance n'a pas de quartier à
+   prouver, et ça ne l'empêche ni d'être publiée ni d'entrer dans un budget
+   constaté — seule la preuve d'implantation territoriale (`Noyau.territoires()`)
+   n'a simplement rien à y localiser. `referentiels/national.json` est un
+   référentiel minimal (une seule racine, « France », aucun quartier) pour ce
+   cas ; `metiers/conseil.json` est le premier catalogue dont l'unité de
+   taille n'est ni une surface ni un volume mais des jours ou des heures.
+   `tools/demo_universel.py` publie quatre Noyaux (rénovation à Bordeaux,
+   plomberie à Bordeaux, rénovation à Lyon, conseil sans lieu) avec
+   exactement le même code, sans une seule branche par métier, par ville, ni
+   par présence de territoire.
+6. **Le commerce et l'hôtellerie-restauration.** Pas fait, et volontairement
+   pas commencé. Une boutique ou un restaurant n'a pas d'« intervention » à
+   documenter : la nature de la preuve (avis clients, fraîcheur des
+   informations, labels) est différente de celle d'un chantier ou d'une
+   mission, pas une variante de plus du même modèle. Ce serait une seconde
+   forme de Noyau, pas une extension de celle-ci — décision à prendre
+   séparément, pas à faire au fil de l'eau.
+7. **Le niveau engageant.** Toujours à construire. Le modèle distingue
    déclaré et vérifié ; il manque le troisième niveau, celui que l'entreprise
    **engage** avec conséquence, seul utilisable par un agent qui transacte.

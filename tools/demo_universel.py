@@ -10,15 +10,17 @@ mécanique — comparabilité par bande, seuil de publication, preuve par pièce
 s'appliquent à n'importe quel métier et n'importe quelle zone qui documente
 des interventions datées, localisées et facturées.
 
-Ce script publie trois Noyaux avec exactement les mêmes appels, en variant
-métier et ville indépendamment:
+Ce script publie quatre Noyaux avec exactement les mêmes appels, en variant
+métier, ville, et présence même d'une géographie:
 
 * Atelier Ferrand — rénovation, Bordeaux (référentiel d'origine)
 * Aqua Bordeaux — plomberie, Bordeaux (second métier, même ville)
 * Atelier Croix-Rousse Rénovation — rénovation, Lyon (même métier, seconde ville)
+* Delta Conseil — conseil, sans ancrage local (aucun chantier n'a de territoire)
 
-Aucune branche « si Bordeaux alors... » ni « si rénovation alors... » n'existe
-dans le code appelé ici — la preuve, c'est que ce script n'a besoin d'aucune.
+Aucune branche « si Bordeaux alors... », « si rénovation alors... » ni « si
+territoire alors... » n'existe dans le code appelé ici — la preuve, c'est que
+ce script n'a besoin d'aucune.
 
 Ceci teste le mécanisme en simulation, avec des données fictives. Ça ne
 remplace aucune validation terrain: ça montre que l'architecture n'est
@@ -40,6 +42,7 @@ ENTREPRISES = [
     ("Atelier Ferrand", "noyaux/atelier-ferrand.json", "referentiels/bordeaux.json"),
     ("Aqua Bordeaux", "noyaux/aqua-bordeaux.json", "referentiels/bordeaux.json"),
     ("Atelier Croix-Rousse Rénovation", "noyaux/renov-lyon.json", "referentiels/lyon.json"),
+    ("Delta Conseil", "noyaux/conseil-remote.json", "referentiels/national.json"),
 ]
 
 

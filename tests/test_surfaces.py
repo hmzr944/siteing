@@ -381,6 +381,44 @@ class TestMultiZone(unittest.TestCase):
         self.assertGreater(report["pages"], 0)
 
 
+class TestSansAncrageLocal(unittest.TestCase):
+    """Un cabinet de conseil à distance: aucun chantier n'a de territoire.
+
+    Ce n'est pas un cas dégradé du modèle rénovation/plomberie, c'est un
+    usage prévu — voir Chantier.territoire et le référentiel minimal
+    referentiels/national.json.
+    """
+
+    def conseil(self) -> Noyau:
+        return Noyau.load(
+            ROOT_DIR / "noyaux" / "conseil-remote.json",
+            Referentiel.load(ROOT_DIR / "referentiels" / "national.json"),
+        )
+
+    def test_zone_comes_from_the_minimal_referentiel(self):
+        self.assertEqual(self.conseil().zone, "France")
+
+    def test_only_the_root_page_exists_with_no_territoire_anywhere(self):
+        """Pas de page de quartier ni de croisement à produire: il n'y a
+        rien à y localiser. Le Noyau reste publiable, juste avec une seule
+        page plutôt qu'un treillis."""
+        nodes = build(self.conseil(), TODAY)
+        self.assertEqual([n.kind for n in nodes], [ROOT])
+
+    def test_the_budget_still_publishes_without_any_territoire(self):
+        core = self.conseil()
+        published, _ = core.budgets(TODAY)
+        self.assertTrue(published)
+
+    def test_no_offer_vocabulary_and_a_full_site_generates(self):
+        core = self.conseil()
+        for node in build(core, TODAY):
+            self.assertEqual(contains_offer_vocabulary(for_node(core, node, TODAY)), [])
+        with TemporaryDirectory() as tmp:
+            report = generate(core, "https://delta-conseil.fr", tmp, TODAY)
+        self.assertGreater(report["pages"], 0)
+
+
 class TestExclusivite(unittest.TestCase):
     """La seule chose qui distingue deux Noyaux par ailleurs identiques.
 

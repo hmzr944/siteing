@@ -189,6 +189,13 @@ class TestChantier(unittest.TestCase):
         self.assertIsNone(verriere.unit_price)
         self.assertAlmostEqual(chantier(size=6.0, budget_eur=12000).unit_price, 2000.0)
 
+    def test_territoire_is_optional(self):
+        """Une mission de conseil à distance n'a pas de quartier à prouver:
+        l'absence de territoire n'est pas une erreur, ni un état dégradé."""
+        remote = chantier(territoire=None)
+        self.assertIsNone(remote.territoire)
+        self.assertIsNotNone(remote.comparability_key)
+
 
 # -- budget -------------------------------------------------------------------
 
@@ -297,6 +304,25 @@ class TestNoyau(unittest.TestCase):
         raw["chantiers"][0]["territoire"] = "montmartre"
         with self.assertRaises(KeyError):
             Noyau.from_dict(raw, referentiel())
+
+    def test_a_chantier_without_territoire_is_accepted(self):
+        """Un consultant à distance ne prouve aucun quartier: ça ne doit pas
+        empêcher le Noyau de se construire, ni le budget de compter ce
+        chantier."""
+        raw = json.loads(NOYAU.read_text(encoding="utf-8"))
+        raw["chantiers"][0].pop("territoire", None)
+        core_remote = Noyau.from_dict(raw, referentiel())
+        chantier_sans_lieu = next(c for c in core_remote.chantiers if c.id == raw["chantiers"][0]["id"])
+        self.assertIsNone(chantier_sans_lieu.territoire)
+        self.assertTrue(any(t.count for t in core_remote.territoires()))
+
+    def test_territoires_skips_chantiers_without_one(self):
+        raw = json.loads(NOYAU.read_text(encoding="utf-8"))
+        for entry in raw["chantiers"]:
+            entry.pop("territoire", None)
+        core_all_remote = Noyau.from_dict(raw, referentiel())
+        self.assertEqual(core_all_remote.territoires(), [])
+        self.assertEqual(core_all_remote.territoires_publiables(), [])
 
     def test_duplicate_chantier_ids_are_refused(self):
         raw = json.loads(NOYAU.read_text(encoding="utf-8"))
