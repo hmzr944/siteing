@@ -112,9 +112,14 @@ réécrite en silence) :
    1 moteur, e-mail jour 0 généré automatiquement
    (`citation_audit/prospection.py`, voir `docs/VENTE.md` §1). **Pas fait** :
    le rendu vidéo de 90 secondes reste manuel.
-5. ~~Registre des créneaux.~~ Fait — `citation_audit/creneau.py`, trois
-   paliers (socle/position/exclusif), refus de conflit plutôt qu'avertissement,
-   maintenant consulté par les surfaces publiques (`surfaces/exclusivite.py`).
+5. ~~Registre des créneaux.~~ Fait, puis corrigé — `citation_audit/creneau.py`,
+   trois paliers (socle/position/exclusif), refus de conflit plutôt
+   qu'avertissement. Une première version le faisait consulter par les
+   surfaces publiques pour y ajouter une mention d'exclusivité
+   (`surfaces/exclusivite.py`, supprimé) : erroné, ça faisait du registre une
+   régie publicitaire. L'exclusivité porte désormais uniquement sur
+   l'allocation de l'accompagnement, jamais sur ce que le registre publie —
+   voir §1.
 6. **Le niveau engageant.** Toujours pas fait — voir `docs/NOYAU.md` §7.
 7. **Le commerce et l'hôtellerie-restauration.** Toujours hors scope,
    délibérément — voir `docs/NOYAU.md` §7.

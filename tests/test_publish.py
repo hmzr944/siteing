@@ -7,7 +7,6 @@ from datetime import date, timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from citation_audit.creneau import EXCLUSIF, Registry
 from citation_audit.dossier import VERIFIED, Dossier
 from citation_audit.publish import (
     PROTOCOL,
@@ -96,16 +95,11 @@ class TestManifest(unittest.TestCase):
             [c["key"] for c in again["claims"]],
         )
 
-    def test_slots_included_only_when_a_registry_is_supplied(self):
+    def test_never_carries_tier_or_exclusivity_information(self):
+        """Un descripteur destiné aux agents doit être la même source pour
+        toute entreprise vérifiée — voir docs/PLAN.md §1. `to_manifest` n'a
+        plus de paramètre de registre du tout: il ne peut pas fuiter."""
         self.assertNotIn("slots", self.manifest)
-        registry = Registry(grants=[])
-        registry.grant(
-            "plombier", "Bordeaux", "vasseur", EXCLUSIF,
-            date(2026, 1, 1), date(2027, 1, 1), today=TODAY,
-        )
-        with_slots = to_manifest(self.dossier, registry, today=TODAY)
-        self.assertEqual(len(with_slots["slots"]), 1)
-        self.assertTrue(with_slots["slots"][0]["exclusive"])
 
     def test_dossier_url_is_optional(self):
         self.assertNotIn("dossier_url", self.manifest)

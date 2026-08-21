@@ -44,8 +44,7 @@ python3 -m citation_audit audit markets/plombier-bordeaux.json \
     --provider synthetic:7 --provider synthetic:19 --out out/
 
 # publier un Dossier de Vérité: page publique + sorties machine
-python3 -m citation_audit dossier dossiers/vasseur.json \
-    --registry registre/creneaux.json --out out/
+python3 -m citation_audit dossier dossiers/vasseur.json --out out/
 
 # le modèle économique
 python3 tools/economics.py
@@ -100,8 +99,11 @@ qui vérifie avant d'appeler, et un agent qui parse le JSON-LD embarqué. Sa
 section la plus importante est celle qui liste **ce qui n'est pas vérifié**, sans
 laquelle le reste ne serait pas croyable.
 
-Le **registre des créneaux** fait de l'exclusivité vendue une contrainte du
-système plutôt qu'une promesse orale. Il ne prévient pas, il refuse.
+L'**allocation des créneaux d'accompagnement** fait de l'exclusivité de
+service vendue une contrainte du système plutôt qu'une promesse orale. Elle
+ne porte que sur l'effort de l'équipe, jamais sur ce que le registre publie :
+un Noyau se publie de façon identique, sous exclusivité ou non — voir
+`docs/PLAN.md` §1. Elle ne prévient pas, elle refuse.
 
 ## Les garde-fous, et pourquoi ils sont dans le code
 

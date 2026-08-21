@@ -20,10 +20,12 @@ basculer vers un palier gratuit et un forfait accessible à 19 € :
 
 **La cohérence avec ce qui est construit.** Le Noyau est désormais universel —
 n'importe quel métier, n'importe quelle ville — et sa publication ne dépend
-d'aucun registre (`surfaces/exclusivite.py` : la mention d'exclusivité est un
-ajout, jamais une condition). Facturer 349 €/mois pour l'entrée de gamme
-contredisait cette universalité dans les faits : ça exclut par construction
-la plupart des TPE que le produit peut désormais servir.
+d'aucun palier commercial : le registre est la même source pour toute
+entreprise vérifiée, sans exception (voir `docs/PLAN.md` §1, où l'exclusivité
+a été déplacée hors du registre, dans l'accompagnement). Facturer 349 €/mois
+pour l'entrée de gamme contredisait cette universalité dans les faits : ça
+exclut par construction la plupart des TPE que le produit peut désormais
+servir.
 
 **Le calibrage du rapport de marché.** Le rapport fourni cite deux points
 directement utiles : Webflow a fusionné ses paliers CMS et Business en un

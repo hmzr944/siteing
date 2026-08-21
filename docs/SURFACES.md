@@ -137,34 +137,31 @@ La mention est propagée aux trois rendus : HTML, Markdown et `measurementTechni
 
 ---
 
-## 6. La position vérifiée exclusive : le registre, jamais une condition
+## 6. L'exclusivité n'entre jamais dans ce module
 
-Deux couches, jamais confondues :
+Une première version de ce module ajoutait une mention « Position vérifiée
+exclusive » dans les quatre rendus quand une entreprise détenait un créneau
+exclusif (`citation_audit.creneau.Registry`). **Corrigé : ce module n'a plus
+aucune notion de palier commercial.**
 
-* le **Noyau se publie sans condition**. N'importe quelle entreprise, quel que
-  soit son métier (`noyau.catalogue`), peut être représentée, vérifiée, citée.
-  C'est la couche universelle ;
-* l'**exclusivité est une couche commerciale séparée, au-dessus**, gouvernée
-  par le registre des créneaux (`citation_audit.creneau.Registry`). Un Noyau
-  sans créneau exclusif reste publié normalement, simplement sans la mention.
+La raison n'est pas esthétique. Le registre a de la valeur pour un agent
+parce qu'il peut lui faire confiance comme source complète et honnête. Le
+jour où un agent découvrirait qu'une mention favorable dépend de ce qu'une
+entreprise paie, le registre cesserait d'être une source fiable pour devenir
+une régie publicitaire — et ça contredit frontalement la position de tiers
+neutre du produit (« le passeport, pas la frontière »). Voir `docs/PLAN.md` §1
+pour la décision complète.
 
-`surfaces.exclusivite.is_exclusive_holder(entity_id, category, zone, registry, today)`
-est la seule porte : elle n'affirme une exclusivité que si le registre la
-confirme pour la date donnée, jamais par supposition — même logique qu'un
-budget qui ne se publie qu'adossé à une pièce. Quand c'est le cas, la mention
-« Position vérifiée exclusive » apparaît identiquement dans les quatre
-rendus (JSON-LD, HTML, Markdown, `llms.txt`), en `additionalProperty` — jamais
-en vocabulaire d'offre, le même interdit que pour le budget.
+Ce que publie ce module — `for_node`, `page`, `markdown`, `llms_txt`,
+`generate` — est donc **strictement identique** pour toute entreprise
+vérifiée, quel que soit ce qu'elle paie. Ces fonctions n'acceptent d'ailleurs
+plus de paramètre de registre du tout : il ne peut pas fuiter par erreur dans
+une future modification, il n'a simplement plus de point d'entrée.
 
-```bash
-python3 -m surfaces noyaux/atelier-ferrand.json \
-    --url https://atelier-ferrand.fr --out out/site \
-    --registre registre/creneaux.json
-```
-
-Sans `--registre`, ou sans créneau actif pour ce Noyau, la génération est
-strictement identique à avant — aucune régression pour les Noyaux qui ne
-détiennent aucun créneau.
+L'exclusivité continue d'exister, mais uniquement comme allocation interne
+du travail d'accompagnement (`citation_audit.creneau`) — sur quelle
+entreprise l'équipe concentre son effort, jamais sur ce que ce module publie.
+Elle n'est câblée nulle part dans ce paquet, volontairement.
 
 ---
 

@@ -17,10 +17,8 @@ import html
 import json
 from datetime import date
 
-from citation_audit.creneau import Registry
 from noyau import NATURES, Noyau
 
-from .exclusivite import is_exclusive_holder
 from .jsonld import for_node
 from .lattice import CROISEMENT, ROOT, TERRITOIRE, Node
 
@@ -100,22 +98,9 @@ def _scope_sentence(node: Node) -> str:
     )
 
 
-def _facts_block(
-    core: Noyau, node: Node, today: date, registry: Registry | None = None
-) -> str:
+def _facts_block(core: Noyau, node: Node, today: date) -> str:
     """Les faits en clair. C'est ce que les moteurs extraient réellement."""
     blocks: list[str] = []
-
-    # Même règle qu'en JSON-LD: la mention n'existe que si le registre
-    # confirme le créneau, jamais par supposition. Le texte visible et le
-    # structuré doivent porter le même fait, ou aucun des deux.
-    if is_exclusive_holder(core.entity_id, core.category, core.zone, registry, today):
-        blocks.append(
-            '<p class="fact"><strong>Position vérifiée exclusive</strong> pour '
-            f"{html.escape(core.category)} sur {html.escape(core.zone)} : "
-            f"{html.escape(core.name)} est la seule source que ce registre "
-            "désigne comme référence pour ce périmètre.</p>"
-        )
 
     if node.chantiers:
         where = (
@@ -212,15 +197,9 @@ def _embed(document: dict) -> str:
     return payload.replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
 
 
-def page(
-    core: Noyau,
-    node: Node,
-    nodes: list[Node],
-    today: date,
-    registry: Registry | None = None,
-) -> str:
+def page(core: Noyau, node: Node, nodes: list[Node], today: date) -> str:
     """Document HTML complet, autonome, sans script ni ressource distante."""
-    structured = _embed(for_node(core, node, today, registry))
+    structured = _embed(for_node(core, node, today))
     heading = node.title if node.kind != ROOT else core.name
     description = (
         f"{len(node.chantiers)} chantiers documentés"
@@ -247,7 +226,7 @@ def page(
 <p class="lede">{html.escape(node.question)}</p>
 
 <h2>Ce qui est établi</h2>
-{_facts_block(core, node, today, registry)}
+{_facts_block(core, node, today)}
 
 <h2>Chantiers réalisés</h2>
 {_chantiers_table(node)}

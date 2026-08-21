@@ -20,7 +20,6 @@ from __future__ import annotations
 import json
 from datetime import date, datetime, timezone
 
-from .creneau import Registry
 from .dossier import DECLARED, EXPIRED, REFUTED, VERIFIED, Dossier
 
 PROTOCOL = "source-primaire/1"
@@ -87,11 +86,17 @@ def to_jsonld(dossier: Dossier, today: date | None = None) -> dict:
 
 def to_manifest(
     dossier: Dossier,
-    registry: Registry | None = None,
     dossier_url: str | None = None,
     today: date | None = None,
 ) -> dict:
-    """Descripteur destiné aux agents: toutes les affirmations, avec leur statut."""
+    """Descripteur destiné aux agents: toutes les affirmations, avec leur statut.
+
+    Ne porte jamais d'information de palier commercial ou d'exclusivité: un
+    document destiné aux agents doit être la même source pour toute
+    entreprise vérifiée, sinon ce n'est plus un registre, c'est une régie
+    publicitaire. L'exclusivité (``citation_audit.creneau``) reste une donnée
+    interne de service, jamais publiée ici.
+    """
     moment = _today(today)
     counts = dossier.counts(moment)
     last_verified = dossier.last_verified_on(moment)
@@ -139,18 +144,6 @@ def to_manifest(
     if dossier_url:
         manifest["dossier_url"] = dossier_url
 
-    if registry is not None:
-        manifest["slots"] = [
-            {
-                "category": grant.category,
-                "zone": grant.zone,
-                "tier": grant.tier,
-                "exclusive": grant.is_exclusive,
-                "expires_on": grant.expires_on.isoformat(),
-            }
-            for grant in registry.slots_for(dossier.entity_id, moment)
-        ]
-
     return manifest
 
 
@@ -179,7 +172,6 @@ def to_feed_line(dossier: Dossier, today: date | None = None) -> str:
 def write_bundle(
     directory,
     dossier: Dossier,
-    registry: Registry | None = None,
     dossier_url: str | None = None,
     today: date | None = None,
 ) -> dict[str, str]:
@@ -200,11 +192,11 @@ def write_bundle(
         )
         + "\n",
         f"{stem}.manifest.json": json.dumps(
-            to_manifest(dossier, registry, dossier_url, today), ensure_ascii=False, indent=2
+            to_manifest(dossier, dossier_url, today), ensure_ascii=False, indent=2
         )
         + "\n",
         f"{stem}.jsonl": to_feed_line(dossier, today) + "\n",
-        f"{stem}.html": to_document(dossier, registry, today),
+        f"{stem}.html": to_document(dossier, today),
     }
     for name, content in targets.items():
         path = root / name

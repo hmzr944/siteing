@@ -228,12 +228,10 @@ def _prospection(args) -> int:
 
 
 def _publish_dossier(args) -> int:
-    from .creneau import Registry
     from .dossier import DECLARED, EXPIRED, REFUTED, VERIFIED, Dossier
     from .publish import write_bundle
 
     dossier = Dossier.load(args.dossier)
-    registry = Registry.load(args.registry) if args.registry else None
     counts = dossier.counts()
 
     print(f"DOSSIER DE VÉRITÉ — {dossier.name}")
@@ -257,7 +255,7 @@ def _publish_dossier(args) -> int:
         for claim in stale:
             print(f"  · {claim.label} ({claim.status_label().lower()})")
 
-    written = write_bundle(args.out, dossier, registry, args.url)
+    written = write_bundle(args.out, dossier, args.url)
     print("\nPUBLIÉ")
     for name, path in written.items():
         print(f"  {path}")
@@ -354,7 +352,6 @@ def main(argv: list[str] | None = None) -> int:
     )
     publish.add_argument("dossier")
     publish.add_argument("--out", type=Path, default=Path("out"))
-    publish.add_argument("--registry", type=Path, help="registre des créneaux (JSON)")
     publish.add_argument("--url", help="URL publique de la page, incluse au manifeste")
 
     args = parser.parse_args(argv)

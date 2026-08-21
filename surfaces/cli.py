@@ -10,7 +10,6 @@ import argparse
 from datetime import date
 from pathlib import Path
 
-from citation_audit.creneau import Registry
 from noyau import Noyau, Referentiel
 
 from .site import generate
@@ -23,22 +22,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--url", required=True, help="URL publique de base")
     parser.add_argument("--out", type=Path, default=Path("out/site"))
     parser.add_argument("--date", help="date du relevé (AAAA-MM-JJ)")
-    parser.add_argument(
-        "--registre", type=Path, default=Path("registre/creneaux.json"),
-        help="registre des créneaux, pour la mention d'exclusivité (optionnel)",
-    )
     args = parser.parse_args(argv)
 
     core = Noyau.load(args.noyau, Referentiel.load(args.referentiel))
     today = date.fromisoformat(args.date) if args.date else date.today()
-    # Registry.load() rend un registre vide si le fichier n'existe pas: pas
-    # de créneau connu, donc jamais de mention d'exclusivité, jamais d'erreur.
-    registry = Registry.load(args.registre)
-    report = generate(core, args.url, args.out, today, registry=registry)
+    report = generate(core, args.url, args.out, today)
 
     print(f"SURFACES — {core.name}")
-    if report["exclusive"]:
-        print(f"  position vérifiée exclusive pour {core.category} sur {core.zone}")
     print(
         f"{report['pages']} pages ({report['territoires']} territoires, "
         f"{report['croisements']} croisements dont {report['avec_budget']} avec budget)"

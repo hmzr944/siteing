@@ -69,7 +69,6 @@ que ce produit est censé corriger.
 
 ```bash
 python3 -m citation_audit dossier dossiers/vasseur.json \
-    --registry registre/creneaux.json \
     --url https://plomberie-vasseur.fr/verite \
     --out out/
 ```
@@ -123,14 +122,26 @@ Les pièces ne sont **jamais** stockées ni publiées : le dossier ne porte que 
 références (« Police 4471-882-C », « DSN 2026-05 ») et le nom du contrôleur. Un
 dossier est un document publiable ; publier une facture client serait une faute.
 
-## 7. Le registre des créneaux
+## 7. L'allocation des créneaux d'accompagnement
 
-Nous vendons l'exclusivité d'une catégorie sur une zone. Une exclusivité promise
-oralement et tenue dans un tableur finit vendue deux fois, et ce jour-là nous
-perdons les deux clients plus l'argument qui fait notre prix.
+À ne pas confondre avec le Dossier de Vérité ou sa publication : ceci ne
+touche jamais à ce qu'une IA lit sur une entreprise. Le dossier et ses
+sorties machine (§3-§6) sont la même source pour toute entreprise vérifiée,
+payante ou non — sans quoi le registre cesserait d'être une source fiable
+pour devenir une régie publicitaire. `to_manifest()` et `to_html()` n'ont
+d'ailleurs plus aucun paramètre lié à ceci : ils ne peuvent pas le faire
+fuiter.
 
-`citation_audit/creneau.py` en fait une **contrainte système**. Le registre ne
-prévient pas, il refuse :
+Ce que `citation_audit/creneau.py` gère est différent : sur quelle
+entreprise, par catégorie et par zone, l'équipe concentre son travail
+d'accompagnement — le modèle d'une agence de génération de leads qui ne
+travaille jamais pour deux concurrents directs à la fois. Une exclusivité de
+service promise oralement et tenue dans un tableur finit promise deux fois,
+et ce jour-là nous perdons les deux clients plus l'argument qui fait notre
+prix.
+
+`citation_audit/creneau.py` en fait une **contrainte système**. Le registre
+d'allocation ne prévient pas, il refuse :
 
 ```
 créneau plombier / Bordeaux Métropole détenu en exclusivité par vasseur
@@ -141,13 +152,14 @@ Les règles appliquées :
 
 - un créneau détenu en exclusivité bloque toute autre entreprise ;
 - l'exclusivité est refusée si le créneau est déjà partagé ;
-- un créneau partagé sature à `MAX_SHARED_HOLDERS` (3) titulaires, au-delà la
-  citabilité vendue se dilue et nous vendrions du vide ;
+- un créneau partagé sature à `MAX_SHARED_HOLDERS` (3) titulaires, au-delà le
+  travail d'accompagnement se dilue entre trop de clients pour rester ce
+  qu'il prétend être ;
 - une même entreprise ne peut pas détenir deux fois le même créneau ;
 - la clé de créneau ignore la casse, les accents et les espaces, donc
   « Bordeaux Métropole » et « bordeaux metropole » sont le même créneau ;
 - libérer un créneau raccourcit l'octroi sans effacer l'historique : savoir qui
-  détenait quoi et jusqu'à quand fait partie du registre.
+  détenait quoi et jusqu'à quand fait partie du registre d'allocation.
 
 ## 8. Ce qui reste à construire
 

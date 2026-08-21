@@ -14,9 +14,14 @@ Ce qui est réellement consommé aujourd'hui, par ordre d'importance:
 Les agents ne découvrent pas des API: les crawlers lisent des pages. La couche
 API et agent à agent viendra pour le transactionnel, quand les protocoles auront
 des volumes réels.
+
+Ce module ne connaît aucun palier commercial. Le registre publie la même
+chose pour toute entreprise vérifiée, quel que soit ce qu'elle paie — c'est
+ce qui le rend crédible comme source pour un agent. L'exclusivité éventuelle
+(``citation_audit.creneau``) porte sur l'accompagnement, jamais sur ce que ce
+module expose.
 """
 
-from .exclusivite import exclusive_grant, is_exclusive_holder
 from .jsonld import FORBIDDEN_TERMS, contains_offer_vocabulary, for_node
 from .lattice import (
     CROISEMENT,
@@ -40,9 +45,7 @@ __all__ = [
     "TERRITOIRE",
     "build",
     "contains_offer_vocabulary",
-    "exclusive_grant",
     "for_node",
-    "is_exclusive_holder",
     "generate",
     "llms_txt",
     "markdown",

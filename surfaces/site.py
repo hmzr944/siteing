@@ -31,10 +31,8 @@ from datetime import date
 from pathlib import Path
 from xml.sax.saxutils import escape as xml_escape
 
-from citation_audit.creneau import Registry
 from noyau import NATURES, Noyau
 
-from .exclusivite import is_exclusive_holder
 from .lattice import ROOT, Node, build, summary
 from .render import _scope_sentence, eur, fr_date, page
 
@@ -102,19 +100,9 @@ def sitemap(base_url: str, nodes: list[Node], today: date) -> str:
     )
 
 
-def markdown(
-    core: Noyau, node: Node, today: date, registry: Registry | None = None
-) -> str:
+def markdown(core: Noyau, node: Node, today: date) -> str:
     """Miroir sans balisage: le format que les modèles ingèrent le mieux."""
     lines = [f"# {node.title}", "", f"> {node.question}", ""]
-
-    if is_exclusive_holder(core.entity_id, core.category, core.zone, registry, today):
-        lines += [
-            f"**Position vérifiée exclusive** pour {core.category} sur "
-            f"{core.zone} : {core.name} est la seule source que ce registre "
-            "désigne comme référence pour ce périmètre.",
-            "",
-        ]
 
     if node.chantiers:
         where = node.territoire.locative() if node.territoire else f"à {core.zone}"
@@ -160,10 +148,7 @@ def markdown(
     return "\n".join(lines)
 
 
-def llms_txt(
-    core: Noyau, base_url: str, nodes: list[Node], registry: Registry | None = None,
-    today: date | None = None,
-) -> str:
+def llms_txt(core: Noyau, base_url: str, nodes: list[Node]) -> str:
     """Convention émergente. Pari assumé: coût quasi nul, gain possible."""
     root = base_url.rstrip("/")
     lines = [
@@ -172,15 +157,6 @@ def llms_txt(
         f"> {core.category.capitalize()} à {core.zone}. Chantiers, budgets "
         "constatés et qualifications publiés et contrôlés sur pièces.",
         "",
-    ]
-    if is_exclusive_holder(core.entity_id, core.category, core.zone, registry, today):
-        lines += [
-            f"Position vérifiée exclusive pour {core.category} sur {core.zone} : "
-            f"{core.name} est la seule source que ce registre désigne comme "
-            "référence pour ce périmètre.",
-            "",
-        ]
-    lines += [
         "Les budgets publiés sont des constats de facturation passée, établis sur "
         "des chantiers de taille comparable. Ils ne constituent ni un tarif, ni une "
         "offre, ni un engagement sur un chantier futur.",
@@ -200,14 +176,15 @@ def llms_txt(
 
 def generate(
     core: Noyau, base_url: str, out: str | Path, today: date | None = None,
-    allow: dict[str, bool] | None = None, registry: Registry | None = None,
+    allow: dict[str, bool] | None = None,
 ) -> dict:
     """Produit le site complet. Retourne le récapitulatif.
 
-    ``registry`` est optionnel et ne change jamais si le site se génère:
-    seule la mention d'exclusivité en dépend. Un Noyau sans registre associé
-    reste publié à l'identique, simplement sans cette mention — la couche
-    universelle ne demande jamais de créneau pour exister.
+    Ce que ce site expose ne dépend d'aucun palier commercial: le registre
+    est la même source pour toute entreprise vérifiée, sans exception — voir
+    ``docs/PLAN.md`` §1. L'exclusivité éventuelle (``citation_audit.creneau``)
+    porte sur l'accompagnement que reçoit une entreprise, jamais sur ce que
+    le registre publie à son sujet.
     """
     moment = today or date.today()
     directory = Path(out)
@@ -218,27 +195,22 @@ def generate(
 
     for node in nodes:
         (directory / node.path).write_text(
-            page(core, node, nodes, moment, registry), encoding="utf-8"
+            page(core, node, nodes, moment), encoding="utf-8"
         )
         (directory / node.path.replace(".html", ".md")).write_text(
-            markdown(core, node, moment, registry), encoding="utf-8"
+            markdown(core, node, moment), encoding="utf-8"
         )
         written += [node.path, node.path.replace(".html", ".md")]
 
     (directory / "robots.txt").write_text(robots(base_url, allow), encoding="utf-8")
     (directory / "sitemap.xml").write_text(sitemap(base_url, nodes, moment), encoding="utf-8")
-    (directory / "llms.txt").write_text(
-        llms_txt(core, base_url, nodes, registry, moment), encoding="utf-8"
-    )
+    (directory / "llms.txt").write_text(llms_txt(core, base_url, nodes), encoding="utf-8")
     written += ["robots.txt", "sitemap.xml", "llms.txt"]
 
     report = {
         "entity": core.entity_id,
         "base_url": base_url,
         "generated_on": moment.isoformat(),
-        "exclusive": is_exclusive_holder(
-            core.entity_id, core.category, core.zone, registry, moment
-        ),
         **summary(nodes),
         "files": len(written),
         "pages_detail": [

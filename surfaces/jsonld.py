@@ -25,10 +25,8 @@ from __future__ import annotations
 
 from datetime import date
 
-from citation_audit.creneau import Registry
 from noyau import NATURES, Noyau
 
-from .exclusivite import is_exclusive_holder
 from .lattice import CROISEMENT, ROOT, TERRITOIRE, Node
 
 CONTEXT = "https://schema.org"
@@ -45,8 +43,18 @@ FORBIDDEN_TERMS = (
 )
 
 
-def _organisation(core: Noyau, today: date, registry: Registry | None = None) -> dict:
-    """L'entreprise, telle qu'un moteur doit la comprendre."""
+def _organisation(core: Noyau, today: date) -> dict:
+    """L'entreprise, telle qu'un moteur doit la comprendre.
+
+    Ce document ne varie jamais selon un palier commercial: le registre est
+    la même source, avec les mêmes champs et la même règle de preuve, pour
+    toute entreprise vérifiée. Un registre qui distinguerait visiblement ses
+    clients payants cesserait d'être une source fiable pour être une régie
+    publicitaire — voir la discussion figée dans ``docs/PLAN.md`` §1.
+    L'exclusivité (``citation_audit.creneau``) porte sur l'accompagnement
+    qu'une entreprise reçoit, jamais sur ce que le registre expose à son
+    sujet.
+    """
     document: dict = {
         "@type": "HomeAndConstructionBusiness",
         "@id": f"{core.contact_url or ''}#entreprise",
@@ -57,21 +65,6 @@ def _organisation(core: Noyau, today: date, registry: Registry | None = None) ->
             "publiés et vérifiés."
         ),
     }
-    # Le registre reste la seule source de vérité: on ne publie une mention
-    # d'exclusivité que si le créneau actif appartient bien à ce Noyau, jamais
-    # par supposition. Vocabulaire de statut, pas d'offre: aucun prix, aucun
-    # engagement commercial n'apparaît ici.
-    if is_exclusive_holder(core.entity_id, core.category, core.zone, registry, today):
-        document.setdefault("additionalProperty", []).append(
-            {
-                "@type": "PropertyValue",
-                "name": "Position vérifiée exclusive",
-                "value": (
-                    f"Source de référence exclusive pour {core.category} sur "
-                    f"{core.zone}"
-                ),
-            }
-        )
     if core.contact_url:
         document["url"] = core.contact_url
     if core.legal_id:
@@ -179,11 +172,9 @@ def _realisations(node: Node, limit: int = 12) -> list[dict]:
     return works
 
 
-def for_node(
-    core: Noyau, node: Node, today: date, registry: Registry | None = None
-) -> dict:
+def for_node(core: Noyau, node: Node, today: date) -> dict:
     """Le document structuré d'une page du treillis."""
-    organisation = _organisation(core, today, registry)
+    organisation = _organisation(core, today)
 
     if node.kind == ROOT:
         return {"@context": CONTEXT, **organisation}

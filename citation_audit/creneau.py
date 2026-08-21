@@ -1,12 +1,21 @@
-"""Registre des créneaux.
+"""Allocation des créneaux d'accompagnement — pas le registre de visibilité.
 
-Nous vendons l'exclusivité d'une catégorie sur une zone. Une exclusivité promise
-oralement et tenue dans un tableur finit toujours vendue deux fois, et le jour où
-cela arrive nous perdons les deux clients ainsi que l'argument qui fait notre
-prix. L'exclusivité doit donc être une **contrainte du système**.
+À ne pas confondre avec ce que ``noyau``/``surfaces`` publient : ce module ne
+touche jamais à ce qu'une IA lit sur une entreprise. Le registre (le Noyau, ses
+pages, son JSON-LD) est **la même source pour tout le monde**, vérifiée ou
+non, payante ou non — un registre qui distinguerait ses clients payants
+cesserait d'être une source fiable pour devenir une régie publicitaire.
 
-Le registre refuse tout octroi qui entrerait en conflit. Il n'avertit pas: il
-refuse.
+Ce que ce module gère est différent : sur quelle entreprise, par catégorie et
+par zone, l'équipe concentre son travail d'accompagnement (fiche enrichie,
+suivi rapproché, monitoring approfondi) — le modèle classique d'une agence de
+génération de leads qui ne travaille jamais pour deux concurrents directs à la
+fois. Une exclusivité de service promise oralement et tenue dans un tableur
+finit toujours promise deux fois ; elle doit donc être une **contrainte du
+système**, comme le reste.
+
+Le registre d'allocation refuse tout octroi qui entrerait en conflit. Il
+n'avertit pas: il refuse.
 """
 
 from __future__ import annotations
@@ -18,8 +27,9 @@ from pathlib import Path
 
 from .market import slug
 
-# Paliers de l'offre. Seul le palier haut réserve le créneau: c'est ce qui rend
-# l'urgence commerciale honnête, parce qu'elle est vraie.
+# Paliers d'accompagnement. Seul le palier haut réserve l'exclusivité du
+# service sur ce créneau — jamais l'accès au registre, qui reste ouvert à
+# toute entreprise vérifiée indépendamment de ce module.
 SOCLE = "socle"
 POSITION = "position"
 EXCLUSIF = "exclusif"
@@ -27,8 +37,9 @@ EXCLUSIF = "exclusif"
 EXCLUSIVE_TIERS = frozenset({EXCLUSIF})
 TIER_LABELS = {SOCLE: "Socle", POSITION: "Position", EXCLUSIF: "Exclusif"}
 
-# Nombre maximum de titulaires non exclusifs sur un même créneau. Au-delà, la
-# citabilité que nous vendons se dilue et nous vendons du vide.
+# Nombre maximum d'entreprises accompagnées à la fois sur un même créneau en
+# dessous du palier exclusif. Au-delà, le travail d'accompagnement se dilue
+# entre trop de clients pour rester ce qu'il prétend être.
 MAX_SHARED_HOLDERS = 3
 
 

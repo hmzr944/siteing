@@ -21,7 +21,6 @@ import html
 import json
 from datetime import date
 
-from .creneau import TIER_LABELS, Registry
 from .dossier import DECLARED, EXPIRED, REFUTED, VERIFIED, Dossier
 from .publish import PROTOCOL, to_jsonld
 
@@ -162,17 +161,6 @@ p{margin:0; max-width:62ch; color:var(--ink-soft)}
 .machine dd{margin:0; overflow-wrap:anywhere}
 .machine code{font-family:var(--mono); font-size:.8125rem}
 
-/* créneaux --------------------------------------------------------------- */
-.slots{display:flex; flex-direction:column; gap:1px; background:var(--rule-soft);
-  border:1px solid var(--rule)}
-.slot{background:var(--panel); padding:.75rem 1rem; display:flex; flex-wrap:wrap;
-  gap:.25rem 1rem; align-items:baseline}
-.slot .where{font-size:.9375rem; flex:1 1 12rem}
-.slot .tier{font-family:var(--mono); font-size:.6875rem; letter-spacing:.1em;
-  text-transform:uppercase; color:var(--pine)}
-.slot .until{font-family:var(--mono); font-size:.75rem; color:var(--ink-mute);
-  font-variant-numeric:tabular-nums}
-
 footer{border-top:1px solid var(--rule); padding-top:1rem; display:flex;
   flex-direction:column; gap:.4rem; font-size:.8125rem; color:var(--ink-mute)}
 footer .protocol{font-family:var(--mono); font-size:.6875rem;
@@ -286,29 +274,6 @@ def _gaps(dossier: Dossier, today: date) -> str:
     return f'<div class="gaps"><ul>{"".join(rows)}</ul></div>'
 
 
-def _slots(dossier: Dossier, registry: Registry | None, today: date) -> str:
-    if registry is None:
-        return ""
-    grants = registry.slots_for(dossier.entity_id, today)
-    if not grants:
-        return ""
-    rows = "".join(
-        f'<div class="slot">'
-        f'<span class="where">{html.escape(g.category)}, {html.escape(g.zone)}</span>'
-        f'<span class="tier">{html.escape(TIER_LABELS[g.tier])}'
-        f'{" et exclusif" if g.is_exclusive else ""}</span>'
-        f'<span class="until">jusqu\'au {fr_date(g.expires_on)}</span>'
-        f"</div>"
-        for g in grants
-    )
-    return f"""<section class="block" style="gap:1rem">
-  <h2>Créneaux détenus</h2>
-  <p>Un créneau exclusif signifie qu'aucune autre entreprise de la même catégorie
-  et de la même zone n'est référencée par Source Primaire pendant sa durée.</p>
-  <div class="slots">{rows}</div>
-</section>"""
-
-
 def _machine(dossier: Dossier, today: date) -> str:
     verified = len(dossier.publishable(today))
     return f"""<section class="block" style="gap:1rem">
@@ -343,10 +308,13 @@ def _embed_jsonld(document: dict) -> str:
     )
 
 
-def to_html(
-    dossier: Dossier, registry: Registry | None = None, today: date | None = None
-) -> str:
-    """Fragment de page: titre, styles et contenu, sans squelette de document."""
+def to_html(dossier: Dossier, today: date | None = None) -> str:
+    """Fragment de page: titre, styles et contenu, sans squelette de document.
+
+    Ne varie jamais selon un palier commercial ou une exclusivité: c'est ce
+    qui rend cette page crédible comme source pour un humain et pour un
+    agent, quel que soit ce que l'entreprise paie.
+    """
     moment = today or date.today()
     jsonld = _embed_jsonld(to_jsonld(dossier, moment))
 
@@ -376,8 +344,6 @@ def to_html(
     {_gaps(dossier, moment)}
   </section>
 
-  {_slots(dossier, registry, moment)}
-
   {_machine(dossier, moment)}
 
   <footer>
@@ -391,11 +357,9 @@ def to_html(
 </main>"""
 
 
-def to_document(
-    dossier: Dossier, registry: Registry | None = None, today: date | None = None
-) -> str:
+def to_document(dossier: Dossier, today: date | None = None) -> str:
     """Document autonome, destiné à être hébergé par l'entreprise elle-même."""
-    fragment = to_html(dossier, registry, today)
+    fragment = to_html(dossier, today)
     description = (
         f"Affirmations vérifiées sur pièces concernant {dossier.name}, "
         f"{dossier.category} à {dossier.zone}."

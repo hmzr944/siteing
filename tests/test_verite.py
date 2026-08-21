@@ -13,7 +13,6 @@ import unittest
 from datetime import date
 from pathlib import Path
 
-from citation_audit.creneau import EXCLUSIF, Registry
 from citation_audit.dossier import Claim, Dossier
 from citation_audit.verite import fr_date, to_document, to_html
 
@@ -21,8 +20,8 @@ FIXTURE = Path(__file__).resolve().parent.parent / "dossiers" / "vasseur.json"
 TODAY = date(2026, 8, 8)
 
 
-def page(registry=None):
-    return to_html(Dossier.load(FIXTURE), registry, TODAY)
+def page():
+    return to_html(Dossier.load(FIXTURE), TODAY)
 
 
 class TestContent(unittest.TestCase):
@@ -77,25 +76,22 @@ class TestContent(unittest.TestCase):
                 valid_until=date(2027, 6, 1),
             )
         )
-        rendered = to_html(dossier, None, TODAY)
+        rendered = to_html(dossier, TODAY)
         self.assertEqual(rendered.count("<script"), 1, "un second script a été injecté")
         self.assertIn("\\u003c/script", rendered)
 
     def test_escapes_hostile_text_in_the_human_layer(self):
         dossier = Dossier.load(FIXTURE)
         dossier.name = '<img src=x onerror="alert(1)">'
-        rendered = to_html(dossier, None, TODAY)
+        rendered = to_html(dossier, TODAY)
         self.assertNotIn("<img src=x", rendered)
         self.assertIn("&lt;img", rendered)
 
-    def test_slots_section_appears_only_with_a_registry(self):
-        self.assertNotIn("Créneaux détenus", self.html)
-        registry = Registry(grants=[])
-        registry.grant(
-            "plombier", "Bordeaux Métropole", "vasseur", EXCLUSIF,
-            date(2026, 1, 1), date(2027, 1, 1), TODAY,
-        )
-        self.assertIn("Créneaux détenus", page(registry))
+    def test_never_mentions_slots_or_exclusivity(self):
+        """La page ne varie jamais selon un palier commercial: ce n'est plus
+        une fonctionnalité de ce module, voir docs/PLAN.md §1."""
+        for term in ("Créneaux détenus", "exclusif", "Exclusif", "palier"):
+            self.assertNotIn(term, self.html)
 
     def test_no_photo_means_no_substitute_image(self):
         """Une image d'illustration sur un registre de vérification détruirait
@@ -104,7 +100,7 @@ class TestContent(unittest.TestCase):
         self.assertNotIn("<img", self.html)
 
     def test_document_wrapper_is_a_complete_page(self):
-        document = to_document(Dossier.load(FIXTURE), None, TODAY)
+        document = to_document(Dossier.load(FIXTURE), TODAY)
         self.assertTrue(document.startswith("<!doctype html>"))
         self.assertEqual(document.count("<main"), 1)
         self.assertEqual(document.count("<style>"), 1)
