@@ -60,6 +60,7 @@ EVIDENCE_KINDS = {
     "contrat": "Contrat signé",
     "releve": "Relevé d'exploitation",
     "attestation": "Attestation d'un tiers",
+    "controle_canal": "Code de contrôle envoyé sur un canal déclaré",
 }
 
 

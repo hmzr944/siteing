@@ -23,6 +23,7 @@ from noyau import (
 from noyau.budget import MAX_AGE_DAYS, eligible
 from noyau.chantier import FROM_INVOICE, FROM_VOICE
 from noyau.territoire import normalize
+from noyau.verification import ACTIF, EMAIL, by_siren, claim_existence, confirm_code, issue_code
 
 ROOT = Path(__file__).resolve().parent.parent
 REFERENTIEL = ROOT / "referentiels" / "bordeaux.json"
@@ -402,6 +403,65 @@ class TestNoyau(unittest.TestCase):
             self.assertIn("statement", payload)
             self.assertIn("evidence_count", payload)
             self.assertGreaterEqual(payload["evidence_count"], 1)
+
+
+class TestPublicationReadiness(unittest.TestCase):
+    """`is_publication_ready` verrouille la règle qui interdit toute
+    publication, même minimale, avant que les deux preuves d'identité
+    (existence légale + contrôle de l'établissement) soient vérifiées."""
+
+    def setUp(self):
+        self.core = core()
+
+    def existence(self, today=TODAY):
+        entreprise = by_siren(
+            "123456789",
+            fetch=lambda url: {
+                "results": [
+                    {
+                        "siren": "123456789",
+                        "nom_complet": self.core.name,
+                        "date_creation": "2015-03-12",
+                        "date_fermeture": None,
+                        "nombre_etablissements": 1,
+                        "siege": {
+                            "siret": "12345678900012",
+                            "adresse": "1 rue de la République",
+                            "code_postal": "33000",
+                            "libelle_commune": "Bordeaux",
+                            "etat_administratif": ACTIF,
+                        },
+                    }
+                ]
+            },
+        )
+        return claim_existence(entreprise, today=today)
+
+    def controle(self, today=TODAY):
+        control, code = issue_code(self.core.entity_id, EMAIL, "contact@atelier-ferrand.fr")
+        return confirm_code(control, code, today=today)
+
+    def test_neither_proof_means_not_ready(self):
+        self.assertFalse(self.core.is_publication_ready)
+
+    def test_existence_alone_is_not_enough(self):
+        self.core.claims.append(self.existence())
+        self.assertFalse(self.core.is_publication_ready)
+
+    def test_control_alone_is_not_enough(self):
+        self.core.claims.append(self.controle())
+        self.assertFalse(self.core.is_publication_ready)
+
+    def test_both_proofs_together_make_it_ready(self):
+        self.core.claims.append(self.existence())
+        self.core.claims.append(self.controle())
+        self.assertTrue(self.core.is_publication_ready)
+
+    def test_an_expired_existence_claim_is_not_ready(self):
+        stale = date(2020, 1, 1)
+        self.core.claims.append(self.existence(today=stale))
+        self.core.claims.append(self.controle())
+        self.assertFalse(self.core.is_publication_ready)
 
 
 if __name__ == "__main__":

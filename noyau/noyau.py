@@ -38,6 +38,7 @@ from citation_audit.dossier import Claim, Evidence, VERIFIED
 from .budget import BudgetBloque, BudgetConstate, aggregate
 from .chantier import NATURES, Chantier, TerritoirePreuve
 from .territoire import QUARTIER, Referentiel, Territoire
+from .verification import IDENTITY_CONTROL_KEY, IDENTITY_EXISTENCE_KEY
 
 # Nombre de chantiers requis pour qu'une implantation territoriale soit publiée.
 # Un chantier isolé aux Chartrons ne fait pas de vous un spécialiste des
@@ -182,6 +183,23 @@ class Noyau:
     def has_credential(self, key: str, on: date | None = None) -> bool:
         """Interrogation booléenne, telle que la surface machine en a besoin."""
         return any(c.key == key and c.status(on) == VERIFIED for c in self.claims)
+
+    @property
+    def is_publication_ready(self) -> bool:
+        """Les deux preuves d'identité — existence légale ET contrôle de
+        l'établissement — sont vérifiées et à jour.
+
+        Verrouille en un seul endroit la règle qui interdit de publier une
+        fiche, même minimale, avant que la bonne personne ait confirmé
+        contrôler l'établissement qu'elle inscrit: sans ce garde-fou, un
+        concurrent pourrait inscrire une fiche usurpée avec de fausses
+        coordonnées, et la première affaire de ce genre démolirait la
+        promesse « source vérifiée » du registre entier.
+        """
+        today = date.today()
+        return self.has_credential(IDENTITY_EXISTENCE_KEY, today) and self.has_credential(
+            IDENTITY_CONTROL_KEY, today
+        )
 
     # -- publication ----------------------------------------------------------
 

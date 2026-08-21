@@ -14,6 +14,15 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from noyau import MIN_CHANTIERS_TERRITOIRE, Noyau, Referentiel
+from noyau.verification import (
+    ACTIF,
+    EMAIL,
+    VerificationRefusee,
+    by_siren,
+    claim_existence,
+    confirm_code,
+    issue_code,
+)
 from surfaces import (
     AI_CRAWLERS,
     COMPLET,
@@ -506,6 +515,100 @@ class TestMinimalDistribution(unittest.TestCase):
             implicit = generate(core(), BASE, tmp, TODAY)
         self.assertEqual(explicit["pages"], implicit["pages"])
         self.assertGreater(explicit["pages"], 1)
+
+
+def verified(entity: Noyau) -> Noyau:
+    """Une copie du Noyau avec les deux preuves d'identité vérifiées, pour
+    les tests qui doivent passer la porte `require_verified_identity`."""
+    entreprise = by_siren(
+        "123456789",
+        fetch=lambda url: {
+            "results": [
+                {
+                    "siren": "123456789",
+                    "nom_complet": entity.name,
+                    "date_creation": "2015-03-12",
+                    "date_fermeture": None,
+                    "nombre_etablissements": 1,
+                    "siege": {
+                        "siret": "12345678900012",
+                        "adresse": "1 rue de la République",
+                        "code_postal": "33000",
+                        "libelle_commune": "Bordeaux",
+                        "etat_administratif": ACTIF,
+                    },
+                }
+            ]
+        },
+    )
+    entity.claims.append(claim_existence(entreprise, today=TODAY))
+    control, code = issue_code(entity.entity_id, EMAIL, "contact@atelier-ferrand.fr")
+    entity.claims.append(confirm_code(control, code, today=TODAY))
+    return entity
+
+
+class TestRequireVerifiedIdentity(unittest.TestCase):
+    """Publier une fiche, même minimale, sans les deux preuves d'identité
+    ouvrirait la porte à l'usurpation — voir `noyau.noyau.Noyau.is_publication_ready`.
+    Le paramètre est opt-in (défaut faux) pour ne rien casser des appels
+    existants qui ne portent pas encore ces preuves."""
+
+    def test_default_does_not_require_identity_verification(self):
+        """Comportement historique inchangé: aucun appelant existant ne doit
+        se mettre à échouer parce que ce paramètre existe désormais."""
+        with TemporaryDirectory() as tmp:
+            report = generate(core(), BASE, tmp, TODAY)
+        self.assertEqual(report["distribution"], COMPLET)
+
+    def test_refuses_when_flag_is_set_and_identity_is_unverified(self):
+        with TemporaryDirectory() as tmp:
+            with self.assertRaises(VerificationRefusee):
+                generate(core(), BASE, tmp, TODAY, require_verified_identity=True)
+
+    def test_refuses_for_minimal_distribution_too(self):
+        """La règle protège aussi la fiche gratuite: le registre n'a pas de
+        palier où une identité non contrôlée serait publiable."""
+        with TemporaryDirectory() as tmp:
+            with self.assertRaises(VerificationRefusee):
+                generate(
+                    core(), BASE, tmp, TODAY,
+                    distribution=MINIMAL, require_verified_identity=True,
+                )
+
+    def test_succeeds_once_both_proofs_are_verified(self):
+        with TemporaryDirectory() as tmp:
+            report = generate(
+                verified(core()), BASE, tmp, TODAY, require_verified_identity=True,
+            )
+        self.assertGreaterEqual(report["pages"], 1)
+
+    def test_existence_alone_is_not_enough_to_publish(self):
+        entity = core()
+        entreprise = by_siren(
+            "123456789",
+            fetch=lambda url: {
+                "results": [
+                    {
+                        "siren": "123456789",
+                        "nom_complet": entity.name,
+                        "date_creation": "2015-03-12",
+                        "date_fermeture": None,
+                        "nombre_etablissements": 1,
+                        "siege": {
+                            "siret": "12345678900012",
+                            "adresse": "1 rue de la République",
+                            "code_postal": "33000",
+                            "libelle_commune": "Bordeaux",
+                            "etat_administratif": ACTIF,
+                        },
+                    }
+                ]
+            },
+        )
+        entity.claims.append(claim_existence(entreprise, today=TODAY))
+        with TemporaryDirectory() as tmp:
+            with self.assertRaises(VerificationRefusee):
+                generate(entity, BASE, tmp, TODAY, require_verified_identity=True)
 
 
 if __name__ == "__main__":

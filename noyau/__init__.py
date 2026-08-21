@@ -28,6 +28,18 @@ from .noyau import (
     Noyau,
 )
 from .territoire import COMMUNE, METROPOLE, QUARTIER, Referentiel, Territoire
+from .verification import (
+    IDENTITY_CONTROL_KEY,
+    IDENTITY_EXISTENCE_KEY,
+    ControlCode,
+    SireneEtablissement,
+    VerificationRefusee,
+    by_name,
+    by_siren,
+    claim_existence,
+    confirm_code,
+    issue_code,
+)
 
 __all__ = [
     "Assertion",
@@ -36,6 +48,9 @@ __all__ = [
     "COMMUNE",
     "Catalogue",
     "Chantier",
+    "ControlCode",
+    "IDENTITY_CONTROL_KEY",
+    "IDENTITY_EXISTENCE_KEY",
     "MIN_CHANTIERS",
     "MIN_CHANTIERS_TERRITOIRE",
     "METROPOLE",
@@ -46,10 +61,17 @@ __all__ = [
     "Noyau",
     "QUARTIER",
     "Referentiel",
+    "SireneEtablissement",
     "Territoire",
     "TerritoirePreuve",
     "TYPOLOGIES",
+    "VerificationRefusee",
     "aggregate",
+    "by_name",
+    "by_siren",
+    "claim_existence",
+    "confirm_code",
+    "issue_code",
 ]
 
 __version__ = "0.1.0"

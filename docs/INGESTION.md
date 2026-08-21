@@ -124,8 +124,9 @@ facture viendra plus tard, et c'est une ligne du Plan de Travail.
 
 `HeuristicExtractor` — sans réseau ni modèle. Il sert de démonstration, de repli
 quand l'appel échoue, et surtout d'**oracle de test** : les résolveurs sont
-vérifiés indépendamment de tout modèle. Les 312 tests du dépôt tournent hors
-ligne.
+vérifiés indépendamment de tout modèle. Les 464 tests du dépôt tournent hors
+ligne (à l'exception de `tools/verifie_siren.py`, un smoke-test volontairement
+tenu hors de la suite — `docs/VERIFICATION.md`).
 
 `LLMExtractor` — sortie structurée typée, avec `tool_choice` forcé et
 vérification du verbatim en sortie. Repli automatique sur l'heuristique en cas

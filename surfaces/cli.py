@@ -15,6 +15,7 @@ from datetime import date
 from pathlib import Path
 
 from noyau import Noyau, Referentiel
+from noyau.verification import VerificationRefusee
 
 from .site import COMPLET, DISTRIBUTIONS, generate
 
@@ -30,11 +31,25 @@ def main(argv: list[str] | None = None) -> int:
         "--distribution", choices=DISTRIBUTIONS, default=COMPLET,
         help="minimal (palier Gratuit: identité seulement) ou complet (défaut)",
     )
+    parser.add_argument(
+        "--require-verified-identity", action="store_true",
+        help=(
+            "refuse de publier si l'existence légale (SIRENE) et le contrôle "
+            "de l'établissement (code envoyé) ne sont pas tous deux vérifiés"
+        ),
+    )
     args = parser.parse_args(argv)
 
     core = Noyau.load(args.noyau, Referentiel.load(args.referentiel))
     today = date.fromisoformat(args.date) if args.date else date.today()
-    report = generate(core, args.url, args.out, today, distribution=args.distribution)
+    try:
+        report = generate(
+            core, args.url, args.out, today, distribution=args.distribution,
+            require_verified_identity=args.require_verified_identity,
+        )
+    except VerificationRefusee as exc:
+        print(f"REFUSÉ — {exc}")
+        return 1
 
     print(f"SURFACES — {core.name} ({report['distribution']})")
     print(

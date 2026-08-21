@@ -157,6 +157,16 @@ core.has_credential("decennale", on=date(2026, 8, 16))  # False, expirée
 C'est la date qui fait l'autorité. Une décennale expirée sort automatiquement de
 la publication et entre dans le plan de travail, sans intervention humaine.
 
+**L'identité de l'entreprise elle-même suit la même mécanique**, avec deux
+affirmations dédiées (`noyau/verification.py`, détaillé dans
+`docs/VERIFICATION.md`) : `existence_siren` (automatisée, via le répertoire
+public SIRENE) et `controle_etablissement` (code envoyé sur un canal déclaré,
+puis resaisi — la preuve que c'est la bonne personne qui inscrit sa propre
+entreprise). `Noyau.is_publication_ready` exige les deux, vérifiées et à
+jour, avant qu'une fiche — même minimale — ne soit publiable : sans ce
+verrou, n'importe qui pourrait inscrire le concurrent d'en face avec de
+fausses coordonnées.
+
 ---
 
 ## 5. La provenance, sur chaque chantier

@@ -32,6 +32,7 @@ from pathlib import Path
 from xml.sax.saxutils import escape as xml_escape
 
 from noyau import NATURES, Noyau
+from noyau.verification import VerificationRefusee
 
 from .lattice import ROOT, Node, build, summary
 from .render import _scope_sentence, eur, fr_date, page
@@ -213,6 +214,7 @@ def llms_txt(
 def generate(
     core: Noyau, base_url: str, out: str | Path, today: date | None = None,
     allow: dict[str, bool] | None = None, distribution: str = COMPLET,
+    require_verified_identity: bool = False,
 ) -> dict:
     """Produit le site. Retourne le récapitulatif.
 
@@ -223,9 +225,22 @@ def generate(
     COMPLET (palier Forfait et au-dessus) publie le treillis entier. Les deux
     valeurs sont explicites, jamais un booléen anonyme qui obligerait à
     relire l'appel pour savoir ce qu'il déclenche.
+
+    ``require_verified_identity``, si vrai, refuse de produire quoi que ce
+    soit tant que ``core.is_publication_ready`` est faux — c'est-à-dire tant
+    que l'existence légale (SIRENE) et le contrôle de l'établissement (code
+    envoyé) ne sont pas *tous deux* vérifiés (``noyau/verification.py``).
+    Défaut à faux pour ne pas casser les appels et fixtures existants qui ne
+    portent pas encore ces preuves ; tout appelant qui publie réellement vers
+    le web doit le passer à vrai.
     """
     if distribution not in DISTRIBUTIONS:
         raise ValueError(f"distribution inconnue: {distribution!r} (attendu: {DISTRIBUTIONS})")
+    if require_verified_identity and not core.is_publication_ready:
+        raise VerificationRefusee(
+            f"{core.entity_id}: existence légale et contrôle de l'établissement "
+            "doivent être vérifiés avant toute publication, même minimale."
+        )
     minimal = distribution == MINIMAL
 
     moment = today or date.today()
