@@ -98,9 +98,17 @@ def _scope_sentence(node: Node) -> str:
     )
 
 
-def _facts_block(core: Noyau, node: Node, today: date) -> str:
+def _facts_block(core: Noyau, node: Node, today: date, minimal: bool = False) -> str:
     """Les faits en clair. C'est ce que les moteurs extraient réellement."""
     blocks: list[str] = []
+
+    if minimal:
+        if core.legal_id:
+            blocks.append(
+                '<p class="fact"><strong>Identité vérifiée automatiquement</strong> '
+                f"via le répertoire SIRENE, SIREN {html.escape(core.legal_id)}.</p>"
+            )
+        return "".join(blocks)
 
     if node.chantiers:
         where = (
@@ -197,15 +205,38 @@ def _embed(document: dict) -> str:
     return payload.replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
 
 
-def page(core: Noyau, node: Node, nodes: list[Node], today: date) -> str:
-    """Document HTML complet, autonome, sans script ni ressource distante."""
-    structured = _embed(for_node(core, node, today))
+def page(
+    core: Noyau, node: Node, nodes: list[Node], today: date, minimal: bool = False
+) -> str:
+    """Document HTML complet, autonome, sans script ni ressource distante.
+
+    ``minimal`` produit la fiche du palier Gratuit: identité vérifiée
+    automatiquement, aucun chantier ni certification. Voir docs/PLAN.md §2-3.
+    """
+    structured = _embed(for_node(core, node, today, minimal))
     heading = node.title if node.kind != ROOT else core.name
-    description = (
-        f"{len(node.chantiers)} chantiers documentés"
-        + (f" {node.territoire.locative()}" if node.territoire else f" à {core.zone}")
-        + f". {node.question}"
-    )
+
+    if minimal:
+        description = f"Fiche vérifiée de {core.name}, {core.category} à {core.zone}."
+        body = f"""<h2>Identité</h2>
+{_facts_block(core, node, today, minimal)}
+
+<p>Fiche minimale, publiée gratuitement pour toute entreprise vérifiée.
+Aucun chantier ni certification n'est publié à ce palier : ces deux matières
+exigent une vérification humaine sur pièce.</p>"""
+    else:
+        description = (
+            f"{len(node.chantiers)} chantiers documentés"
+            + (f" {node.territoire.locative()}" if node.territoire else f" à {core.zone}")
+            + f". {node.question}"
+        )
+        body = f"""<h2>Ce qui est établi</h2>
+{_facts_block(core, node, today, minimal)}
+
+<h2>Chantiers réalisés</h2>
+{_chantiers_table(node)}
+
+{_links(node, nodes)}"""
 
     return f"""<!doctype html>
 <html lang="fr">
@@ -225,19 +256,17 @@ def page(core: Noyau, node: Node, nodes: list[Node], today: date) -> str:
 <h1>{html.escape(heading)}</h1>
 <p class="lede">{html.escape(node.question)}</p>
 
-<h2>Ce qui est établi</h2>
-{_facts_block(core, node, today)}
-
-<h2>Chantiers réalisés</h2>
-{_chantiers_table(node)}
-
-{_links(node, nodes)}
+{body}
 
 <footer>
-<p>Chantiers, budgets et qualifications publiés par {html.escape(core.name)}
-et contrôlés sur pièces. Les budgets indiqués sont des constats de facturation
-passée : ils ne constituent ni un tarif, ni une offre, ni un engagement sur un
-chantier futur. Page mise à jour le {today.isoformat()}.</p>
+<p>{
+    f"Identité vérifiée automatiquement via le répertoire SIRENE pour {html.escape(core.name)}."
+    if minimal else
+    f"Chantiers, budgets et qualifications publiés par {html.escape(core.name)} "
+    "et contrôlés sur pièces. Les budgets indiqués sont des constats de facturation "
+    "passée : ils ne constituent ni un tarif, ni une offre, ni un engagement sur un "
+    "chantier futur."
+} Page mise à jour le {today.isoformat()}.</p>
 </footer>
 </main>
 </body>

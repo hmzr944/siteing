@@ -2,6 +2,10 @@
 
     python3 -m surfaces noyaux/atelier-ferrand.json \
         --url https://atelier-ferrand.fr --out out/site
+
+    # fiche gratuite: identité vérifiée automatiquement, rien de plus
+    python3 -m surfaces noyaux/atelier-ferrand.json \
+        --url https://atelier-ferrand.fr --out out/site --distribution minimal
 """
 
 from __future__ import annotations
@@ -12,7 +16,7 @@ from pathlib import Path
 
 from noyau import Noyau, Referentiel
 
-from .site import generate
+from .site import COMPLET, DISTRIBUTIONS, generate
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -22,13 +26,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--url", required=True, help="URL publique de base")
     parser.add_argument("--out", type=Path, default=Path("out/site"))
     parser.add_argument("--date", help="date du relevé (AAAA-MM-JJ)")
+    parser.add_argument(
+        "--distribution", choices=DISTRIBUTIONS, default=COMPLET,
+        help="minimal (palier Gratuit: identité seulement) ou complet (défaut)",
+    )
     args = parser.parse_args(argv)
 
     core = Noyau.load(args.noyau, Referentiel.load(args.referentiel))
     today = date.fromisoformat(args.date) if args.date else date.today()
-    report = generate(core, args.url, args.out, today)
+    report = generate(core, args.url, args.out, today, distribution=args.distribution)
 
-    print(f"SURFACES — {core.name}")
+    print(f"SURFACES — {core.name} ({report['distribution']})")
     print(
         f"{report['pages']} pages ({report['territoires']} territoires, "
         f"{report['croisements']} croisements dont {report['avec_budget']} avec budget)"

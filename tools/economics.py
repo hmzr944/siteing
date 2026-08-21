@@ -8,19 +8,23 @@ montrer le calcul n'est pas un argument.
     python3 tools/economics.py
     python3 tools/economics.py --months 36 --free-signups 200
 
-**L'offre a changé de forme.** Trois paliers, dont un gratuit et limité :
+**L'offre a changé de forme, deux fois.** Trois paliers, dont un gratuit —
+et publié :
 
-* **Gratuit** — Noyau constitué et vérifié (ingestion, seuils de preuve),
-  mais **non distribué** : aucune page publique, aucun JSON-LD exposé aux
-  robots, aucune mesure de citation. La donnée existe, elle n'est pas encore
-  visible des agents. C'est une limite structurelle, pas un plafond de
-  fonctionnalités arbitraire — cohérent avec le reste du produit : on ne
-  publie jamais ce qui n'est pas prouvé, on ne distribue pas ici ce qui
-  n'est pas payé.
-* **Forfait — 19 €/mois** — distribution activée (surfaces publiques,
-  robots.txt, JSON-LD) et relevé de citation périodique. Vendu en self-serve,
-  jamais par appel commercial : à ce prix, un cycle de vente sortant coûterait
-  plus que le client ne rapporte.
+* **Gratuit** — Noyau constitué et vérifié, publié en fiche **minimale**
+  (identité vérifiée automatiquement via le répertoire SIRENE : nom,
+  catégorie, zone, SIREN — voir ``surfaces.MINIMAL``). Le registre vaut par
+  sa complétude, pas par son revenu : un annuaire qui n'exposerait que ses
+  clients payants perdrait la densité qui le rend utile à un agent, et
+  ressemblerait aux annuaires professionnels payants des années 2000. Rien
+  qui exige une vérification humaine (chantiers sur pièce, certifications)
+  n'y figure — la frontière suit le coût de vérification, jamais
+  l'existence.
+* **Forfait — 19 €/mois** — distribution **complète** (``surfaces.COMPLET`` :
+  chantiers, budgets constatés, certifications, treillis de pages) et relevé
+  de citation périodique. Vendu en self-serve, jamais par appel commercial :
+  à ce prix, un cycle de vente sortant coûterait plus que le client ne
+  rapporte.
 * **Forfait Exclusif** — + position vérifiée exclusive (catégorie × zone),
   vendue par le playbook sortant existant (docs/VENTE.md), inchangé : à ce
   ticket, l'Audit d'Invisibilité et l'appel restent rentables.
@@ -60,14 +64,21 @@ class Assumptions:
     free_signups_ramp_months: int = 6
     # Sur la population gratuite restante chaque mois: converti, ou parti.
     # Fraction qui finit par convertir = convert_rate / (convert_rate + churn_free)
-    # ≈ 13 % ici — au-dessus des standards du freemium grand public (Linktree :
-    # <1 $/utilisateur/an, cf. docs/PLAN.md) parce que la limite n'est pas
-    # cosmétique: le dossier existe et reste invisible tant qu'on ne paie pas,
-    # ce qui est un déclencheur plus fort qu'une fonctionnalité verrouillée.
+    # ≈ 13 % ici. Le Gratuit publie désormais la fiche minimale (identité
+    # vérifiée automatiquement, docs/PLAN.md §2-3) — le déclencheur n'est plus
+    # "payez pour exister" mais "payez pour la profondeur, la fraîcheur et le
+    # suivi". Cette hypothèse de conversion reste donc à confirmer sur de
+    # vrais inscrits, comme avant : ce n'est pas parce que le registre est
+    # plus honnête qu'il convertit forcément mieux.
     convert_rate: float = 0.015
     churn_free: float = 0.10
     cost_per_signup: float = 2       # contenu/SEO amorti (docs/VENTE.md §4.1)
-    cost_free_per_user: float = 1    # ingestion + stockage, quasi nul
+    # Vérification de l'identité (SIREN/SIRET) : gratuite, l'API publique
+    # recherche-entreprises.api.gouv.fr (source ouverte INSEE Sirene) ne
+    # facture rien et autorise ~7 requêtes/seconde sans authentification —
+    # largement suffisant à l'échelle de ce modèle. Ce chiffre couvre donc
+    # seulement l'ingestion et le stockage, jamais la vérification elle-même.
+    cost_free_per_user: float = 1
 
     # -- mouvement 2: sortant -> Exclusif (docs/VENTE.md, inchangé) -----------
     exclusif_slots_per_month: int = 4

@@ -11,10 +11,11 @@ citable par les moteurs de réponse, mesure sa Part de Citation, et réserve la
 **position vérifiée exclusive** d'une catégorie et d'une zone à une seule
 entreprise à la fois.
 
-Le Noyau lui-même — le dossier vérifié, sa publication — n'est plus réservé à
-qui paie l'exclusivité : c'est le §3 qui explique pourquoi (un palier gratuit
-et un forfait à 19 €/mois ouvrent le registre à toute entreprise, l'exclusivité
-reste un palier au-dessus, rare et payant).
+Le Noyau lui-même — le dossier vérifié, sa publication — n'est réservé à
+personne : le registre publie une fiche minimale gratuite pour toute
+entreprise vérifiée, sans exception (§2-3). Seule l'exclusivité, palier
+au-dessus, reste rare et payante — et elle ne porte que sur l'accompagnement,
+jamais sur ce que le registre publie (`docs/SURFACES.md` §6).
 
 Pourquoi celui-là plutôt que Cote (notation) ou Confluence (réseau mutualisé) :
 
@@ -41,24 +42,28 @@ Le livrable, du gratuit à l'exclusif :
 1. **Le Dossier de Vérité** — référentiel machine-lisible de l'entreprise (offre,
    prix, délais, zones, capacités, garanties, preuves), constitué dès
    l'inscription, quel que soit le palier. Ce qui change avec le palier n'est
-   pas la qualité du dossier, c'est sa **distribution**.
-2. **La vérification par tiers** — chaque affirmation contrôlée sur pièces. C'est
-   la partie qu'un logiciel en self-serve ne peut structurellement pas produire,
-   et elle est identique sur les trois paliers.
-3. **La distribution** — pages publiques, JSON-LD exposé aux robots, mesure de
-   Part de Citation. **Réservée aux paliers payants** (§3) : un dossier
-   gratuit est constitué et vérifié, mais reste invisible des agents tant
-   qu'il n'est pas distribué.
+   pas si le dossier existe, c'est sa **profondeur publiée**.
+2. **La vérification** — deux natures bien distinctes, qui tracent la
+   frontière gratuit/payant : l'identité (SIREN/SIRET) se vérifie
+   **automatiquement**, gratuitement, via le répertoire public SIRENE ; les
+   chantiers sur pièce et les certifications exigent un **contrôle humain**,
+   qui ne s'automatise pas. Voir `docs/ECONOMIE.md` §0 pour le chiffrage.
+3. **La distribution** — deux niveaux (`surfaces.MINIMAL` / `surfaces.COMPLET`),
+   jamais un interrupteur payant/gratuit sur l'existence même. **Le registre
+   publie sans exception** : toute entreprise vérifiée a une page et un
+   JSON-LD, dès l'inscription. Ce que le palier change, c'est la profondeur
+   de ce qui est publié (§3).
 4. **La position exclusive** — catégorie × zone, réservée à une seule
-   entreprise, contrainte par le registre (`citation_audit/creneau.py`), pas
-   une promesse orale.
+   entreprise, contrainte par le registre d'allocation
+   (`citation_audit/creneau.py`), pas une promesse orale — et jamais visible
+   dans ce que le registre publie (voir `docs/SURFACES.md` §6).
 
 ## 3. Grille tarifaire
 
 | Palier | Prix | Ce qui change | Cible |
 |---|---|---|---|
-| **Gratuit** | 0 € | dossier constitué et vérifié, **non distribué** (aucune page publique, aucun JSON-LD, aucune mesure) | toute entreprise, sans exception — c'est la couche universelle |
-| **Forfait** | **19 €/mois** | + distribution activée : pages publiques, JSON-LD, relevé de citation périodique | TPE, artisan, indépendant — vendu en self-serve, jamais par appel commercial |
+| **Gratuit** | 0 € | fiche **minimale**, publiée : identité vérifiée automatiquement (nom, catégorie, zone, SIREN), page publique + JSON-LD. Aucun chantier, aucune certification. | toute entreprise, sans exception — c'est la couche universelle |
+| **Forfait** | **19 €/mois** | fiche **complète** : chantiers sur pièce, budgets constatés, certifications, treillis de pages, relevé de citation périodique | TPE, artisan, indépendant — vendu en self-serve, jamais par appel commercial |
 | **Exclusif** | 990 €/mois | + **position vérifiée exclusive** catégorie × zone, distribution prioritaire, revue trimestrielle | leader local, franchise, e-commerce régional — vendu par le playbook sortant (`docs/VENTE.md`) |
 
 - **Frais d'entrée, palier Exclusif seulement : 900 €** — constitution
@@ -70,10 +75,14 @@ Le livrable, du gratuit à l'exclusif :
   `docs/ECONOMIE.md`.
 
 **Le gratuit n'est pas un plafond de fonctionnalités arbitraire, c'est la
-distribution retenue.** Le dossier existe, vérifié, dès l'inscription — il
-n'est simplement pas montré aux agents tant que ce n'est pas payé. C'est le
-même ressort psychologique que l'Audit d'Invisibilité (`docs/VENTE.md` §1) :
-la donnée sur vous existe, la question est qui la contrôle.
+frontière du vérifiable sans humain.** Le registre vaut par sa complétude,
+pas par son revenu : un annuaire qui n'exposerait que ses clients payants
+perdrait la densité qui est son seul argument face à une IA qui, sinon,
+consulte le web scrappé. « Payez pour exister » est aussi le modèle des
+annuaires professionnels payants des années 2000 — reconnaissable au premier
+coup d'œil par n'importe quel prospect sceptique. La phrase qui tient lieu de
+règle : **exister dans le registre est un droit, en tirer la profondeur, la
+fraîcheur et le suivi est un service.**
 
 **L'exclusivité reste réelle**, comme avant : un seul acteur par créneau,
 contrainte système et non promesse orale — c'est ce qui rend l'urgence

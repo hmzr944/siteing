@@ -16,8 +16,10 @@ from tempfile import TemporaryDirectory
 from noyau import MIN_CHANTIERS_TERRITOIRE, Noyau, Referentiel
 from surfaces import (
     AI_CRAWLERS,
+    COMPLET,
     CROISEMENT,
     FORBIDDEN_TERMS,
+    MINIMAL,
     MIN_CHANTIERS_CROISEMENT,
     ROOT,
     TERRITOIRE,
@@ -448,6 +450,62 @@ class TestNoTierLeaksIntoTheRegistry(unittest.TestCase):
             report = generate(core(), BASE, tmp, TODAY)
         self.assertNotIn("exclusive", report)
         self.assertNotIn("tier", report)
+
+
+class TestMinimalDistribution(unittest.TestCase):
+    """La fiche du palier Gratuit (docs/PLAN.md §2-3): identité vérifiable
+    automatiquement, publiée pour toute entreprise vérifiée, sans exception.
+    Rien qui exige une vérification humaine ne doit y apparaître.
+    """
+
+    def test_rejects_an_unknown_distribution_level(self):
+        with TemporaryDirectory() as tmp:
+            with self.assertRaises(ValueError):
+                generate(core(), BASE, tmp, TODAY, distribution="premium")
+
+    def test_produces_a_single_page(self):
+        with TemporaryDirectory() as tmp:
+            report = generate(core(), BASE, tmp, TODAY, distribution=MINIMAL)
+        self.assertEqual(report["pages"], 1)
+        self.assertEqual(report["distribution"], MINIMAL)
+
+    def test_identity_is_present(self):
+        nodes = build(core(), TODAY)
+        document = for_node(core(), nodes[0], TODAY, minimal=True)
+        self.assertEqual(document["name"], core().name)
+        self.assertIn("identifier", document)
+
+    def test_no_chantier_budget_or_credential_data_appears_anywhere(self):
+        """La phrase honnête « aucun chantier n'est publié à ce palier » est
+        attendue — ce test défend l'absence de *données* de chantier (une
+        table, un montant, un nom de certification), pas l'absence du mot."""
+        with TemporaryDirectory() as tmp:
+            report = generate(core(), BASE, tmp, TODAY, distribution=MINIMAL)
+            html = (Path(tmp) / "index.html").read_text(encoding="utf-8")
+            md = (Path(tmp) / "index.md").read_text(encoding="utf-8")
+            txt = (Path(tmp) / "llms.txt").read_text(encoding="utf-8")
+
+        for corpus in (html, md, txt):
+            self.assertNotIn("<table", corpus.lower())
+            self.assertNotIn("budget médian", corpus.lower())
+            self.assertNotIn("qualibat", corpus.lower())
+            self.assertNotIn("décennale", corpus.lower())
+        self.assertEqual(report["pages_detail"][0]["chantiers"], 0)
+        self.assertFalse(report["pages_detail"][0]["has_budget"])
+
+    def test_still_carries_no_offer_vocabulary(self):
+        document = for_node(core(), build(core(), TODAY)[0], TODAY, minimal=True)
+        self.assertEqual(contains_offer_vocabulary(document), [])
+
+    def test_complet_is_the_default_and_unaffected(self):
+        """Le comportement historique reste le défaut: aucun appelant existant
+        ne doit changer de comportement en oubliant ce paramètre."""
+        with TemporaryDirectory() as tmp:
+            explicit = generate(core(), BASE, tmp, TODAY, distribution=COMPLET)
+        with TemporaryDirectory() as tmp:
+            implicit = generate(core(), BASE, tmp, TODAY)
+        self.assertEqual(explicit["pages"], implicit["pages"])
+        self.assertGreater(explicit["pages"], 1)
 
 
 if __name__ == "__main__":

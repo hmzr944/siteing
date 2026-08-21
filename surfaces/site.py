@@ -36,6 +36,16 @@ from noyau import NATURES, Noyau
 from .lattice import ROOT, Node, build, summary
 from .render import _scope_sentence, eur, fr_date, page
 
+# Les deux niveaux de distribution (docs/PLAN.md §2-3). MINIMAL est la fiche
+# du palier Gratuit: identité vérifiable automatiquement (SIRENE), publiée
+# pour toute entreprise vérifiée, sans exception — le registre vaut par sa
+# complétude, pas par son revenu. COMPLET ajoute ce qui exige une
+# vérification humaine (chantiers sur pièce, certifications) et n'est vendu
+# qu'au palier payant.
+MINIMAL = "minimal"
+COMPLET = "complet"
+DISTRIBUTIONS = (MINIMAL, COMPLET)
+
 # Robots d'IA connus, avec ce que les autoriser implique réellement.
 # Autoriser un robot d'entraînement, c'est accepter que la donnée serve à
 # entraîner un modèle. Pour ce produit le troc est évident, puisque le but est
@@ -100,9 +110,21 @@ def sitemap(base_url: str, nodes: list[Node], today: date) -> str:
     )
 
 
-def markdown(core: Noyau, node: Node, today: date) -> str:
+def markdown(core: Noyau, node: Node, today: date, minimal: bool = False) -> str:
     """Miroir sans balisage: le format que les modèles ingèrent le mieux."""
     lines = [f"# {node.title}", "", f"> {node.question}", ""]
+
+    if minimal:
+        if core.legal_id:
+            lines += [
+                f"**Identité vérifiée automatiquement** via le répertoire SIRENE, "
+                f"SIREN {core.legal_id}.",
+                "",
+                "Fiche minimale, publiée gratuitement. Aucun chantier ni "
+                "certification n'est publié à ce palier.",
+                "",
+            ]
+        return "\n".join(lines)
 
     if node.chantiers:
         where = node.territoire.locative() if node.territoire else f"à {core.zone}"
@@ -148,22 +170,36 @@ def markdown(core: Noyau, node: Node, today: date) -> str:
     return "\n".join(lines)
 
 
-def llms_txt(core: Noyau, base_url: str, nodes: list[Node]) -> str:
+def llms_txt(
+    core: Noyau, base_url: str, nodes: list[Node], minimal: bool = False
+) -> str:
     """Convention émergente. Pari assumé: coût quasi nul, gain possible."""
     root = base_url.rstrip("/")
-    lines = [
-        f"# {core.name}",
-        "",
-        f"> {core.category.capitalize()} à {core.zone}. Chantiers, budgets "
-        "constatés et qualifications publiés et contrôlés sur pièces.",
-        "",
-        "Les budgets publiés sont des constats de facturation passée, établis sur "
-        "des chantiers de taille comparable. Ils ne constituent ni un tarif, ni une "
-        "offre, ni un engagement sur un chantier futur.",
-        "",
-        "## Pages",
-        "",
-    ]
+    if minimal:
+        lines = [
+            f"# {core.name}",
+            "",
+            f"> {core.category.capitalize()} à {core.zone}. Identité vérifiée "
+            "automatiquement via le répertoire SIRENE. Fiche minimale, sans "
+            "chantier ni certification.",
+            "",
+            "## Pages",
+            "",
+        ]
+    else:
+        lines = [
+            f"# {core.name}",
+            "",
+            f"> {core.category.capitalize()} à {core.zone}. Chantiers, budgets "
+            "constatés et qualifications publiés et contrôlés sur pièces.",
+            "",
+            "Les budgets publiés sont des constats de facturation passée, établis sur "
+            "des chantiers de taille comparable. Ils ne constituent ni un tarif, ni une "
+            "offre, ni un engagement sur un chantier futur.",
+            "",
+            "## Pages",
+            "",
+        ]
     for node in nodes:
         markdown_path = node.path.replace(".html", ".md")
         lines.append(
@@ -176,41 +212,55 @@ def llms_txt(core: Noyau, base_url: str, nodes: list[Node]) -> str:
 
 def generate(
     core: Noyau, base_url: str, out: str | Path, today: date | None = None,
-    allow: dict[str, bool] | None = None,
+    allow: dict[str, bool] | None = None, distribution: str = COMPLET,
 ) -> dict:
-    """Produit le site complet. Retourne le récapitulatif.
+    """Produit le site. Retourne le récapitulatif.
 
-    Ce que ce site expose ne dépend d'aucun palier commercial: le registre
-    est la même source pour toute entreprise vérifiée, sans exception — voir
-    ``docs/PLAN.md`` §1. L'exclusivité éventuelle (``citation_audit.creneau``)
-    porte sur l'accompagnement que reçoit une entreprise, jamais sur ce que
-    le registre publie à son sujet.
+    ``distribution`` ne dépend d'aucune exclusivité commerciale — voir
+    ``docs/PLAN.md`` §1, où ce sujet reste hors de ce module. C'est un choix
+    différent, posé au §2-3 : MINIMAL (défaut historique du palier Gratuit)
+    ne publie que l'identité vérifiable automatiquement, une seule page ;
+    COMPLET (palier Forfait et au-dessus) publie le treillis entier. Les deux
+    valeurs sont explicites, jamais un booléen anonyme qui obligerait à
+    relire l'appel pour savoir ce qu'il déclenche.
     """
+    if distribution not in DISTRIBUTIONS:
+        raise ValueError(f"distribution inconnue: {distribution!r} (attendu: {DISTRIBUTIONS})")
+    minimal = distribution == MINIMAL
+
     moment = today or date.today()
     directory = Path(out)
     directory.mkdir(parents=True, exist_ok=True)
 
     nodes = build(core, moment)
+    if minimal:
+        # La fiche minimale ne couvre que l'identité: les pages de territoire
+        # et de croisement n'existent que pour montrer des chantiers, une
+        # matière entièrement absente de ce niveau.
+        nodes = nodes[:1]
     written: list[str] = []
 
     for node in nodes:
         (directory / node.path).write_text(
-            page(core, node, nodes, moment), encoding="utf-8"
+            page(core, node, nodes, moment, minimal), encoding="utf-8"
         )
         (directory / node.path.replace(".html", ".md")).write_text(
-            markdown(core, node, moment), encoding="utf-8"
+            markdown(core, node, moment, minimal), encoding="utf-8"
         )
         written += [node.path, node.path.replace(".html", ".md")]
 
     (directory / "robots.txt").write_text(robots(base_url, allow), encoding="utf-8")
     (directory / "sitemap.xml").write_text(sitemap(base_url, nodes, moment), encoding="utf-8")
-    (directory / "llms.txt").write_text(llms_txt(core, base_url, nodes), encoding="utf-8")
+    (directory / "llms.txt").write_text(
+        llms_txt(core, base_url, nodes, minimal), encoding="utf-8"
+    )
     written += ["robots.txt", "sitemap.xml", "llms.txt"]
 
     report = {
         "entity": core.entity_id,
         "base_url": base_url,
         "generated_on": moment.isoformat(),
+        "distribution": distribution,
         **summary(nodes),
         "files": len(written),
         "pages_detail": [
@@ -219,8 +269,10 @@ def generate(
                 "kind": n.kind,
                 "title": n.title,
                 "question": n.question,
-                "chantiers": len(n.chantiers),
-                "has_budget": n.budget is not None,
+                # En mode minimal, aucun chantier n'est publié: le compte
+                # n'a pas sa place ici non plus, même dans ce résumé de build.
+                "chantiers": 0 if minimal else len(n.chantiers),
+                "has_budget": False if minimal else n.budget is not None,
             }
             for n in nodes
         ],

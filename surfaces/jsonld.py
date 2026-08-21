@@ -43,23 +43,26 @@ FORBIDDEN_TERMS = (
 )
 
 
-def _organisation(core: Noyau, today: date) -> dict:
+def _organisation(core: Noyau, today: date, minimal: bool = False) -> dict:
     """L'entreprise, telle qu'un moteur doit la comprendre.
 
-    Ce document ne varie jamais selon un palier commercial: le registre est
-    la même source, avec les mêmes champs et la même règle de preuve, pour
-    toute entreprise vérifiée. Un registre qui distinguerait visiblement ses
-    clients payants cesserait d'être une source fiable pour être une régie
-    publicitaire — voir la discussion figée dans ``docs/PLAN.md`` §1.
-    L'exclusivité (``citation_audit.creneau``) porte sur l'accompagnement
-    qu'une entreprise reçoit, jamais sur ce que le registre expose à son
-    sujet.
+    Ce document ne varie jamais selon un palier commercial de manière
+    cachée: la seule variation possible est ``minimal``, explicite,
+    documentée, et elle ne retire jamais rien qui exigerait une vérification
+    humaine d'un côté pour l'ajouter de l'autre en douce. C'est la fiche du
+    palier Gratuit — identité vérifiable automatiquement (SIRENE), rien de
+    plus — telle que fixée par ``docs/PLAN.md`` §2-3 : le gratuit publie le
+    minimum vérifiable, le payant vend la profondeur, jamais l'existence.
+    L'exclusivité (``citation_audit.creneau``) reste hors de ce module,
+    quelle que soit la valeur de ``minimal``.
     """
     document: dict = {
         "@type": "HomeAndConstructionBusiness",
         "@id": f"{core.contact_url or ''}#entreprise",
         "name": core.name,
         "description": (
+            f"{core.category.capitalize()} à {core.zone}, identité vérifiée."
+            if minimal else
             f"{core.category.capitalize()} intervenant à {core.zone}, "
             "dont les chantiers, budgets constatés et qualifications sont "
             "publiés et vérifiés."
@@ -73,6 +76,12 @@ def _organisation(core: Noyau, today: date) -> dict:
             "propertyID": "SIREN",
             "value": core.legal_id,
         }
+
+    if minimal:
+        # Aucun chantier, aucune certification: ces deux matières exigent une
+        # vérification humaine sur pièce, donc appartiennent au palier payant
+        # — voir la frontière posée dans docs/PLAN.md §2.
+        return document
 
     served = [
         p.territoire for p in core.territoires_publiables(today)
@@ -172,11 +181,11 @@ def _realisations(node: Node, limit: int = 12) -> list[dict]:
     return works
 
 
-def for_node(core: Noyau, node: Node, today: date) -> dict:
+def for_node(core: Noyau, node: Node, today: date, minimal: bool = False) -> dict:
     """Le document structuré d'une page du treillis."""
-    organisation = _organisation(core, today)
+    organisation = _organisation(core, today, minimal)
 
-    if node.kind == ROOT:
+    if node.kind == ROOT or minimal:
         return {"@context": CONTEXT, **organisation}
 
     spec = NATURES[node.nature] if node.nature else None

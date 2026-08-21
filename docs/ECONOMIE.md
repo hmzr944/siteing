@@ -12,35 +12,51 @@ python3 tools/economics.py --convert-rate 0.010     # test de rupture sur la con
 python3 tools/economics.py --exclusif-slots-per-month 2 --months 36
 ```
 
-## 0. Pourquoi l'offre a changé de forme
+## 0. Pourquoi l'offre a changé de forme, deux fois
 
-L'offre précédente avait trois paliers, tous payants (349 € / 749 € / 1 490 €),
-vendus par un seul mouvement commercial sortant. Deux raisons ont fait
-basculer vers un palier gratuit et un forfait accessible à 19 € :
+L'offre initiale avait trois paliers, tous payants (349 € / 749 € / 1 490 €),
+vendus par un seul mouvement commercial sortant. Premier changement : un
+palier gratuit et un forfait accessible à 19 €, calibrés sur le rapport de
+marché fourni (Webflow Premium à **25 $**, Base44 à partir de **40 $**) —
+détail dans l'historique de ce document.
 
-**La cohérence avec ce qui est construit.** Le Noyau est désormais universel —
-n'importe quel métier, n'importe quelle ville — et sa publication ne dépend
-d'aucun palier commercial : le registre est la même source pour toute
-entreprise vérifiée, sans exception (voir `docs/PLAN.md` §1, où l'exclusivité
-a été déplacée hors du registre, dans l'accompagnement). Facturer 349 €/mois
-pour l'entrée de gamme contredisait cette universalité dans les faits : ça
-exclut par construction la plupart des TPE que le produit peut désormais
-servir.
+**Second changement, plus important : le gratuit est publié.** La première
+version du palier gratuit constituait et vérifiait le dossier sans jamais le
+distribuer — repli tentant pour protéger la conversion, mais qui casse
+mécaniquement le pari central du produit. La position plateforme ne vaut que
+si le registre est la source la plus **complète**, pas la plus rentable par
+entrée : un agent qui cherche « plombiers à Lyon » et n'en trouve que les
+abonnés payants n'a aucune raison de préférer ce registre au web scrappé.
+Chaque restriction d'accès affaiblit exactement ce qui rend le registre
+précieux — le même raisonnement mécanique qui a déjà fait sortir
+l'exclusivité du registre (`docs/PLAN.md` §1). Il y a aussi un problème de
+perception : « payez pour exister » est le modèle des annuaires
+professionnels payants des années 2000, un modèle que tout prospect
+sceptique reconnaît et fuit.
 
-**Le calibrage du rapport de marché.** Le rapport fourni cite deux points
-directement utiles : Webflow a fusionné ses paliers CMS et Business en un
-plan Premium à **25 $** en mai 2026, et Base44 démarre autour de **40 $**.
-19 € se situe dans cette bande, côté accessible. Le même rapport cite
-Linktree comme mise en garde : 50 millions d'utilisateurs mais moins de
-1 $/utilisateur/an de revenu — un palier gratuit trop généreux ou un
-déclencheur de conversion trop faible produit une base large et
-inexploitable. La réponse retenue ici n'est pas de limiter des
-fonctionnalités arbitrairement, mais de retenir la **distribution** : le
-Noyau gratuit est constitué et vérifié, il n'est simplement pas publié vers
-les surfaces publiques ni mesuré par `citation_audit`. C'est un déclencheur
-structurel (on retient ce qui fait la valeur du produit, pas un chiffre de
-compteur), pas cosmétique — plus proche, en théorie, du taux de conversion
-que du régime Linktree.
+**La frontière retenue suit le coût de vérification, pas la visibilité.** Le
+Gratuit publie la fiche **minimale** : identité vérifiée automatiquement
+(nom, catégorie, zone, SIREN), page publique et JSON-LD, pour toute
+entreprise, sans exception. Le Forfait vend la fiche **complète** :
+chantiers vérifiés sur pièce, budgets constatés, certifications, treillis de
+pages, mesure de citation périodique — tout ce qui exige une vérification
+**humaine**, qui ne s'automatise pas. Le gratuit publié est aussi le
+meilleur canal d'acquisition : chaque fiche minimale est une porte
+d'entrée vers le diagnostic et l'upsell, ce qu'une fiche non publiée ne
+pouvait pas être.
+
+**Ce que coûte la vérification automatique — la question qui décidait si le
+gratuit est soutenable.** L'identité d'une entreprise française (SIREN,
+raison sociale, adresse, code NAF) se vérifie via
+[`recherche-entreprises.api.gouv.fr`](https://recherche-entreprises.api.gouv.fr/docs/)
+(DINUM/SocialGouv, données Sirene de l'INSEE) : **gratuite, publique, sans
+authentification**, avec une limite de l'ordre de 7 requêtes par seconde —
+largement suffisant à l'échelle de ce modèle (quelques centaines
+d'inscriptions par mois, §2). Le coût marginal de la vérification elle-même
+est donc **nul** ; `cost_free_per_user` (1 €/mois, §1) ne couvre que
+l'ingestion et le stockage, pas un poste de vérification qui n'existe pas.
+C'est ce qui rend le gratuit publié soutenable à grande échelle : le seul
+coût qui grandit avec le volume est déjà dans le modèle.
 
 ## 1. Deux mouvements commerciaux, deux unités économiques
 
