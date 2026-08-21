@@ -60,7 +60,11 @@ EVIDENCE_KINDS = {
     "contrat": "Contrat signé",
     "releve": "Relevé d'exploitation",
     "attestation": "Attestation d'un tiers",
-    "controle_canal": "Code de contrôle envoyé sur un canal déclaré",
+    # Le canal de contrôle fait partie de la nature de la pièce: un code reçu
+    # sur le domaine propre et un code reçu par courrier au siège ne prouvent
+    # pas la même chose, et un agent doit pouvoir lire la différence.
+    "controle_domaine": "Code de contrôle reçu sur une adresse du domaine de l'entreprise",
+    "controle_courrier": "Code de contrôle reçu par courrier à l'adresse du siège",
 }
 
 

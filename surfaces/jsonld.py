@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from noyau import NATURES, Noyau
+from noyau import NATURES, NON_REVENDIQUEE, Noyau
 
 from .lattice import CROISEMENT, ROOT, TERRITOIRE, Node
 
@@ -55,18 +55,35 @@ def _organisation(core: Noyau, today: date, minimal: bool = False) -> dict:
     minimum vérifiable, le payant vend la profondeur, jamais l'existence.
     L'exclusivité (``citation_audit.creneau``) reste hors de ce module,
     quelle que soit la valeur de ``minimal``.
+
+    Le **statut de vérification** est publié quand il est connu
+    (``verification_status``, en ``additionalProperty``): « non
+    revendiquée » pour une fiche référencée établie sur les seules données
+    publiques SIRENE, « vérifiée par domaine » ou « vérifiée par courrier »
+    quand la revendication a été prouvée. Dire la vérité sur le niveau de
+    preuve vaut mieux que la masquer — c'est ce qui rend la distinction
+    lisible par un agent, et honnête pour tout le monde.
     """
+    status = core.verification_status(today)
+    if minimal and status == NON_REVENDIQUEE:
+        description = (
+            f"{core.category.capitalize()} à {core.zone}. Fiche référencée, "
+            "établie à partir des données publiques du répertoire SIRENE — "
+            "non revendiquée par l'entreprise."
+        )
+    elif minimal:
+        description = f"{core.category.capitalize()} à {core.zone}, identité vérifiée."
+    else:
+        description = (
+            f"{core.category.capitalize()} intervenant à {core.zone}, "
+            "dont les chantiers, budgets constatés et qualifications sont "
+            "publiés et vérifiés."
+        )
     document: dict = {
         "@type": "HomeAndConstructionBusiness",
         "@id": f"{core.contact_url or ''}#entreprise",
         "name": core.name,
-        "description": (
-            f"{core.category.capitalize()} à {core.zone}, identité vérifiée."
-            if minimal else
-            f"{core.category.capitalize()} intervenant à {core.zone}, "
-            "dont les chantiers, budgets constatés et qualifications sont "
-            "publiés et vérifiés."
-        ),
+        "description": description,
     }
     if core.contact_url:
         document["url"] = core.contact_url
@@ -76,6 +93,14 @@ def _organisation(core: Noyau, today: date, minimal: bool = False) -> dict:
             "propertyID": "SIREN",
             "value": core.legal_id,
         }
+    if status is not None:
+        document["additionalProperty"] = [
+            {
+                "@type": "PropertyValue",
+                "name": "verification_status",
+                "value": status,
+            }
+        ]
 
     if minimal:
         # Aucun chantier, aucune certification: ces deux matières exigent une

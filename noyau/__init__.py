@@ -31,6 +31,10 @@ from .territoire import COMMUNE, METROPOLE, QUARTIER, Referentiel, Territoire
 from .verification import (
     IDENTITY_CONTROL_KEY,
     IDENTITY_EXISTENCE_KEY,
+    NON_REVENDIQUEE,
+    STATUTS_VERIFIES,
+    VERIFIEE_COURRIER,
+    VERIFIEE_DOMAINE,
     ControlCode,
     SireneEtablissement,
     VerificationRefusee,
@@ -38,7 +42,8 @@ from .verification import (
     by_siren,
     claim_existence,
     confirm_code,
-    issue_code,
+    issue_code_courrier,
+    issue_code_domaine,
 )
 
 __all__ = [
@@ -57,21 +62,26 @@ __all__ = [
     "Manque",
     "NATURE_KEYWORDS",
     "NATURES",
+    "NON_REVENDIQUEE",
     "Nature",
     "Noyau",
     "QUARTIER",
     "Referentiel",
+    "STATUTS_VERIFIES",
     "SireneEtablissement",
     "Territoire",
     "TerritoirePreuve",
     "TYPOLOGIES",
+    "VERIFIEE_COURRIER",
+    "VERIFIEE_DOMAINE",
     "VerificationRefusee",
     "aggregate",
     "by_name",
     "by_siren",
     "claim_existence",
     "confirm_code",
-    "issue_code",
+    "issue_code_courrier",
+    "issue_code_domaine",
 ]
 
 __version__ = "0.1.0"

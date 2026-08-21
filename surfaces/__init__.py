@@ -27,6 +27,12 @@ toute entreprise, gratuitement et sans exception — le registre vaut par sa
 complétude. COMPLET ajoute ce qui exige une vérification humaine (chantiers
 sur pièce, certifications), vendu au palier payant. La frontière suit le
 coût de vérification, jamais l'existence.
+
+Le **statut de vérification** est publié, jamais masqué : une fiche
+référencée (données publiques SIRENE, non revendiquée) est étiquetée comme
+telle sur la page, dans le JSON-LD (``verification_status``) et dans
+``llms.txt`` ; une fiche revendiquée affiche le canal de preuve (« vérifiée
+par domaine » / « vérifiée par courrier »). Voir ``docs/VERIFICATION.md``.
 """
 
 from .jsonld import FORBIDDEN_TERMS, contains_offer_vocabulary, for_node

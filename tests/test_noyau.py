@@ -23,7 +23,18 @@ from noyau import (
 from noyau.budget import MAX_AGE_DAYS, eligible
 from noyau.chantier import FROM_INVOICE, FROM_VOICE
 from noyau.territoire import normalize
-from noyau.verification import ACTIF, EMAIL, by_siren, claim_existence, confirm_code, issue_code
+from noyau.verification import (
+    ACTIF,
+    DIFFUSIBLE,
+    NON_REVENDIQUEE,
+    VERIFIEE_COURRIER,
+    VERIFIEE_DOMAINE,
+    by_siren,
+    claim_existence,
+    confirm_code,
+    issue_code_courrier,
+    issue_code_domaine,
+)
 
 ROOT = Path(__file__).resolve().parent.parent
 REFERENTIEL = ROOT / "referentiels" / "bordeaux.json"
@@ -406,15 +417,16 @@ class TestNoyau(unittest.TestCase):
 
 
 class TestPublicationReadiness(unittest.TestCase):
-    """`is_publication_ready` verrouille la règle qui interdit toute
-    publication, même minimale, avant que les deux preuves d'identité
-    (existence légale + contrôle de l'établissement) soient vérifiées."""
+    """`is_publication_ready` verrouille la condition du badge « vérifié »
+    et de toute donnée déclarative: les deux preuves d'identité (existence
+    légale + contrôle de l'établissement), vérifiées et à jour.
+    `verification_status` publie le niveau atteint, canal compris."""
 
     def setUp(self):
         self.core = core()
 
-    def existence(self, today=TODAY):
-        entreprise = by_siren(
+    def sirene(self):
+        return by_siren(
             "123456789",
             fetch=lambda url: {
                 "results": [
@@ -424,44 +436,65 @@ class TestPublicationReadiness(unittest.TestCase):
                         "date_creation": "2015-03-12",
                         "date_fermeture": None,
                         "nombre_etablissements": 1,
+                        "statut_diffusion": DIFFUSIBLE,
                         "siege": {
                             "siret": "12345678900012",
                             "adresse": "1 rue de la République",
                             "code_postal": "33000",
                             "libelle_commune": "Bordeaux",
                             "etat_administratif": ACTIF,
+                            "statut_diffusion_etablissement": DIFFUSIBLE,
                         },
                     }
                 ]
             },
         )
-        return claim_existence(entreprise, today=today)
 
-    def controle(self, today=TODAY):
-        control, code = issue_code(self.core.entity_id, EMAIL, "contact@atelier-ferrand.fr")
+    def existence(self, today=TODAY):
+        return claim_existence(self.sirene(), today=today)
+
+    def controle(self, today=TODAY, par="domaine"):
+        if par == "domaine":
+            control, code = issue_code_domaine(
+                self.core.entity_id, "contact@atelier-ferrand.fr",
+                "https://atelier-ferrand.fr",
+            )
+        else:
+            control, code = issue_code_courrier(self.core.entity_id, self.sirene())
         return confirm_code(control, code, today=today)
 
-    def test_neither_proof_means_not_ready(self):
-        self.assertFalse(self.core.is_publication_ready)
+    def test_neither_proof_means_not_ready_and_no_status(self):
+        self.assertFalse(self.core.is_publication_ready(TODAY))
+        self.assertIsNone(self.core.verification_status(TODAY))
 
-    def test_existence_alone_is_not_enough(self):
+    def test_existence_alone_is_referenced_not_ready(self):
         self.core.claims.append(self.existence())
-        self.assertFalse(self.core.is_publication_ready)
+        self.assertFalse(self.core.is_publication_ready(TODAY))
+        self.assertEqual(self.core.verification_status(TODAY), NON_REVENDIQUEE)
 
     def test_control_alone_is_not_enough(self):
         self.core.claims.append(self.controle())
-        self.assertFalse(self.core.is_publication_ready)
+        self.assertFalse(self.core.is_publication_ready(TODAY))
+        self.assertIsNone(self.core.verification_status(TODAY))
 
-    def test_both_proofs_together_make_it_ready(self):
+    def test_both_proofs_together_make_it_ready_and_name_the_channel(self):
         self.core.claims.append(self.existence())
-        self.core.claims.append(self.controle())
-        self.assertTrue(self.core.is_publication_ready)
+        self.core.claims.append(self.controle(par="domaine"))
+        self.assertTrue(self.core.is_publication_ready(TODAY))
+        self.assertEqual(self.core.verification_status(TODAY), VERIFIEE_DOMAINE)
+
+    def test_the_postal_channel_is_named_too(self):
+        self.core.claims.append(self.existence())
+        self.core.claims.append(self.controle(par="courrier"))
+        self.assertTrue(self.core.is_publication_ready(TODAY))
+        self.assertEqual(self.core.verification_status(TODAY), VERIFIEE_COURRIER)
 
     def test_an_expired_existence_claim_is_not_ready(self):
         stale = date(2020, 1, 1)
         self.core.claims.append(self.existence(today=stale))
         self.core.claims.append(self.controle())
-        self.assertFalse(self.core.is_publication_ready)
+        self.assertFalse(self.core.is_publication_ready(TODAY))
+        self.assertIsNone(self.core.verification_status(TODAY))
 
 
 if __name__ == "__main__":

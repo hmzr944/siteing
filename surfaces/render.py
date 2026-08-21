@@ -17,7 +17,7 @@ import html
 import json
 from datetime import date
 
-from noyau import NATURES, Noyau
+from noyau import NATURES, NON_REVENDIQUEE, Noyau
 
 from .jsonld import for_node
 from .lattice import CROISEMENT, ROOT, TERRITOIRE, Node
@@ -103,10 +103,24 @@ def _facts_block(core: Noyau, node: Node, today: date, minimal: bool = False) ->
     blocks: list[str] = []
 
     if minimal:
+        status = core.verification_status(today)
         if core.legal_id:
             blocks.append(
                 '<p class="fact"><strong>Identité vérifiée automatiquement</strong> '
                 f"via le répertoire SIRENE, SIREN {html.escape(core.legal_id)}.</p>"
+            )
+        if status == NON_REVENDIQUEE:
+            blocks.append(
+                '<p class="fact"><strong>Fiche non revendiquée.</strong> '
+                "Établie à partir des données publiques du répertoire SIRENE ; "
+                "l'entreprise n'a pas encore prouvé le contrôle de cette fiche. "
+                "Aucune donnée déclarative n'y figure.</p>"
+            )
+        elif status is not None:
+            blocks.append(
+                f'<p class="fact"><strong>Fiche {html.escape(status)}.</strong> '
+                "L'entreprise a prouvé le contrôle de l'établissement par un "
+                "code de vérification.</p>"
             )
         return "".join(blocks)
 
@@ -217,13 +231,20 @@ def page(
     heading = node.title if node.kind != ROOT else core.name
 
     if minimal:
-        description = f"Fiche vérifiée de {core.name}, {core.category} à {core.zone}."
+        status = core.verification_status(today)
+        if status == NON_REVENDIQUEE:
+            description = (
+                f"Fiche référencée de {core.name}, {core.category} à {core.zone} "
+                "— non revendiquée."
+            )
+        else:
+            description = f"Fiche vérifiée de {core.name}, {core.category} à {core.zone}."
         body = f"""<h2>Identité</h2>
 {_facts_block(core, node, today, minimal)}
 
-<p>Fiche minimale, publiée gratuitement pour toute entreprise vérifiée.
-Aucun chantier ni certification n'est publié à ce palier : ces deux matières
-exigent une vérification humaine sur pièce.</p>"""
+<p>Fiche minimale, publiée gratuitement. Aucun chantier ni certification
+n'est publié à ce palier : ces deux matières exigent une vérification
+humaine sur pièce.</p>"""
     else:
         description = (
             f"{len(node.chantiers)} chantiers documentés"
@@ -260,7 +281,11 @@ exigent une vérification humaine sur pièce.</p>"""
 
 <footer>
 <p>{
-    f"Identité vérifiée automatiquement via le répertoire SIRENE pour {html.escape(core.name)}."
+    (
+        f"Identité vérifiée automatiquement via le répertoire SIRENE pour {html.escape(core.name)}."
+        + (" Fiche non revendiquée par l'entreprise."
+           if core.verification_status(today) == NON_REVENDIQUEE else "")
+    )
     if minimal else
     f"Chantiers, budgets et qualifications publiés par {html.escape(core.name)} "
     "et contrôlés sur pièces. Les budgets indiqués sont des constats de facturation "

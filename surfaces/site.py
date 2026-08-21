@@ -31,8 +31,8 @@ from datetime import date
 from pathlib import Path
 from xml.sax.saxutils import escape as xml_escape
 
-from noyau import NATURES, Noyau
-from noyau.verification import VerificationRefusee
+from noyau import NATURES, NON_REVENDIQUEE, Noyau
+from noyau.verification import STATUTS_VERIFIES, VerificationRefusee
 
 from .lattice import ROOT, Node, build, summary
 from .render import _scope_sentence, eur, fr_date, page
@@ -116,15 +116,31 @@ def markdown(core: Noyau, node: Node, today: date, minimal: bool = False) -> str
     lines = [f"# {node.title}", "", f"> {node.question}", ""]
 
     if minimal:
+        status = core.verification_status(today)
         if core.legal_id:
             lines += [
                 f"**Identité vérifiée automatiquement** via le répertoire SIRENE, "
                 f"SIREN {core.legal_id}.",
                 "",
-                "Fiche minimale, publiée gratuitement. Aucun chantier ni "
-                "certification n'est publié à ce palier.",
+            ]
+        if status == NON_REVENDIQUEE:
+            lines += [
+                "**Fiche non revendiquée.** Établie à partir des données "
+                "publiques du répertoire SIRENE ; l'entreprise n'a pas encore "
+                "prouvé le contrôle de cette fiche.",
                 "",
             ]
+        elif status is not None:
+            lines += [
+                f"**Fiche {status}.** L'entreprise a prouvé le contrôle de "
+                "l'établissement par un code de vérification.",
+                "",
+            ]
+        lines += [
+            "Fiche minimale, publiée gratuitement. Aucun chantier ni "
+            "certification n'est publié à ce palier.",
+            "",
+        ]
         return "\n".join(lines)
 
     if node.chantiers:
@@ -172,17 +188,24 @@ def markdown(core: Noyau, node: Node, today: date, minimal: bool = False) -> str
 
 
 def llms_txt(
-    core: Noyau, base_url: str, nodes: list[Node], minimal: bool = False
+    core: Noyau, base_url: str, nodes: list[Node], minimal: bool = False,
+    today: date | None = None,
 ) -> str:
     """Convention émergente. Pari assumé: coût quasi nul, gain possible."""
     root = base_url.rstrip("/")
     if minimal:
+        status = core.verification_status(today)
+        etiquette = (
+            "Fiche référencée, non revendiquée par l'entreprise."
+            if status == NON_REVENDIQUEE
+            else f"Fiche {status}." if status is not None else ""
+        )
         lines = [
             f"# {core.name}",
             "",
             f"> {core.category.capitalize()} à {core.zone}. Identité vérifiée "
-            "automatiquement via le répertoire SIRENE. Fiche minimale, sans "
-            "chantier ni certification.",
+            "automatiquement via le répertoire SIRENE. "
+            f"{etiquette} Fiche minimale, sans chantier ni certification.".rstrip(),
             "",
             "## Pages",
             "",
@@ -226,24 +249,39 @@ def generate(
     valeurs sont explicites, jamais un booléen anonyme qui obligerait à
     relire l'appel pour savoir ce qu'il déclenche.
 
-    ``require_verified_identity``, si vrai, refuse de produire quoi que ce
-    soit tant que ``core.is_publication_ready`` est faux — c'est-à-dire tant
-    que l'existence légale (SIRENE) et le contrôle de l'établissement (code
-    envoyé) ne sont pas *tous deux* vérifiés (``noyau/verification.py``).
+    ``require_verified_identity``, si vrai, applique le modèle à deux états
+    (``docs/VERIFICATION.md`` §4) :
+
+    * **MINIMAL** exige l'existence vérifiée (SIRENE, moins de 30 jours).
+      Sans contrôle de l'établissement, la fiche sort **référencée** —
+      étiquetée « non revendiquée » sur la page, dans le JSON-LD et dans
+      ``llms.txt`` ; avec, elle sort vérifiée, canal affiché.
+    * **COMPLET** exige les deux preuves : la profondeur est entièrement
+      déclarative (chantiers, budgets, certifications), et personne n'est
+      cru sur parole sans avoir prouvé contrôler l'établissement.
+
     Défaut à faux pour ne pas casser les appels et fixtures existants qui ne
     portent pas encore ces preuves ; tout appelant qui publie réellement vers
     le web doit le passer à vrai.
     """
     if distribution not in DISTRIBUTIONS:
         raise ValueError(f"distribution inconnue: {distribution!r} (attendu: {DISTRIBUTIONS})")
-    if require_verified_identity and not core.is_publication_ready:
-        raise VerificationRefusee(
-            f"{core.entity_id}: existence légale et contrôle de l'établissement "
-            "doivent être vérifiés avant toute publication, même minimale."
-        )
-    minimal = distribution == MINIMAL
-
     moment = today or date.today()
+    if require_verified_identity:
+        status = core.verification_status(moment)
+        if status is None:
+            raise VerificationRefusee(
+                f"{core.entity_id}: existence légale non vérifiée (ou vérification "
+                "expirée) — rien n'est publiable, pas même une fiche référencée."
+            )
+        if distribution == COMPLET and status not in STATUTS_VERIFIES:
+            raise VerificationRefusee(
+                f"{core.entity_id}: fiche {status} — la distribution complète "
+                "publie des données déclaratives, elle exige le contrôle de "
+                "l'établissement (par domaine ou par courrier), pas seulement "
+                "l'existence."
+            )
+    minimal = distribution == MINIMAL
     directory = Path(out)
     directory.mkdir(parents=True, exist_ok=True)
 
@@ -267,7 +305,7 @@ def generate(
     (directory / "robots.txt").write_text(robots(base_url, allow), encoding="utf-8")
     (directory / "sitemap.xml").write_text(sitemap(base_url, nodes, moment), encoding="utf-8")
     (directory / "llms.txt").write_text(
-        llms_txt(core, base_url, nodes, minimal), encoding="utf-8"
+        llms_txt(core, base_url, nodes, minimal, moment), encoding="utf-8"
     )
     written += ["robots.txt", "sitemap.xml", "llms.txt"]
 
@@ -276,6 +314,9 @@ def generate(
         "base_url": base_url,
         "generated_on": moment.isoformat(),
         "distribution": distribution,
+        # None quand le Noyau ne porte aucune preuve d'identité (fixtures,
+        # démos): le statut n'est jamais deviné, seulement lu dans les claims.
+        "verification_status": core.verification_status(moment),
         **summary(nodes),
         "files": len(written),
         "pages_detail": [

@@ -38,7 +38,7 @@ from citation_audit.dossier import Claim, Evidence, VERIFIED
 from .budget import BudgetBloque, BudgetConstate, aggregate
 from .chantier import NATURES, Chantier, TerritoirePreuve
 from .territoire import QUARTIER, Referentiel, Territoire
-from .verification import IDENTITY_CONTROL_KEY, IDENTITY_EXISTENCE_KEY
+from .verification import STATUTS_VERIFIES, verification_status
 
 # Nombre de chantiers requis pour qu'une implantation territoriale soit publiée.
 # Un chantier isolé aux Chartrons ne fait pas de vous un spécialiste des
@@ -184,22 +184,32 @@ class Noyau:
         """Interrogation booléenne, telle que la surface machine en a besoin."""
         return any(c.key == key and c.status(on) == VERIFIED for c in self.claims)
 
-    @property
-    def is_publication_ready(self) -> bool:
+    def verification_status(self, today: date | None = None) -> str | None:
+        """Le statut de vérification publiable de la fiche.
+
+        ``None`` (rien n'est publiable), ``NON_REVENDIQUEE`` (fiche
+        référencée: données publiques SIRENE uniquement, étiquetée),
+        ``VERIFIEE_DOMAINE`` ou ``VERIFIEE_COURRIER`` (revendication
+        prouvée, le canal reste lisible). Voir ``noyau/verification.py`` et
+        ``docs/VERIFICATION.md`` pour ce que chaque niveau autorise.
+        """
+        return verification_status(self.claims, today)
+
+    def is_publication_ready(self, today: date | None = None) -> bool:
         """Les deux preuves d'identité — existence légale ET contrôle de
         l'établissement — sont vérifiées et à jour.
 
-        Verrouille en un seul endroit la règle qui interdit de publier une
-        fiche, même minimale, avant que la bonne personne ait confirmé
-        contrôler l'établissement qu'elle inscrit: sans ce garde-fou, un
-        concurrent pourrait inscrire une fiche usurpée avec de fausses
-        coordonnées, et la première affaire de ce genre démolirait la
-        promesse « source vérifiée » du registre entier.
+        C'est la condition du badge « vérifié » et de **toute donnée
+        déclarative** (chantiers, budgets, certifications: tout ce que
+        l'entreprise affirme d'elle-même). La fiche référencée — données
+        publiques du répertoire, étiquetée « non revendiquée » — n'exige que
+        l'existence: paywall ou pas, personne n'est cru sur parole sans
+        avoir prouvé contrôler l'établissement qu'il revendique. Sans ce
+        garde-fou, un concurrent pourrait inscrire une fiche usurpée avec de
+        fausses coordonnées, et la première affaire de ce genre démolirait
+        la promesse « source vérifiée » du registre entier.
         """
-        today = date.today()
-        return self.has_credential(IDENTITY_EXISTENCE_KEY, today) and self.has_credential(
-            IDENTITY_CONTROL_KEY, today
-        )
+        return self.verification_status(today) in STATUTS_VERIFIES
 
     # -- publication ----------------------------------------------------------
 

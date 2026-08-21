@@ -16,12 +16,14 @@ from tempfile import TemporaryDirectory
 from noyau import MIN_CHANTIERS_TERRITOIRE, Noyau, Referentiel
 from noyau.verification import (
     ACTIF,
-    EMAIL,
+    DIFFUSIBLE,
+    NON_REVENDIQUEE,
+    VERIFIEE_DOMAINE,
     VerificationRefusee,
     by_siren,
     claim_existence,
     confirm_code,
-    issue_code,
+    issue_code_domaine,
 )
 from surfaces import (
     AI_CRAWLERS,
@@ -517,41 +519,54 @@ class TestMinimalDistribution(unittest.TestCase):
         self.assertGreater(explicit["pages"], 1)
 
 
-def verified(entity: Noyau) -> Noyau:
-    """Une copie du Noyau avec les deux preuves d'identité vérifiées, pour
-    les tests qui doivent passer la porte `require_verified_identity`."""
-    entreprise = by_siren(
+def sirene_fixture(name: str):
+    return by_siren(
         "123456789",
         fetch=lambda url: {
             "results": [
                 {
                     "siren": "123456789",
-                    "nom_complet": entity.name,
+                    "nom_complet": name,
                     "date_creation": "2015-03-12",
                     "date_fermeture": None,
                     "nombre_etablissements": 1,
+                    "statut_diffusion": DIFFUSIBLE,
                     "siege": {
                         "siret": "12345678900012",
                         "adresse": "1 rue de la République",
                         "code_postal": "33000",
                         "libelle_commune": "Bordeaux",
                         "etat_administratif": ACTIF,
+                        "statut_diffusion_etablissement": DIFFUSIBLE,
                     },
                 }
             ]
         },
     )
-    entity.claims.append(claim_existence(entreprise, today=TODAY))
-    control, code = issue_code(entity.entity_id, EMAIL, "contact@atelier-ferrand.fr")
+
+
+def referenced(entity: Noyau) -> Noyau:
+    """Le Noyau avec l'existence seule: la fiche référencée, non revendiquée."""
+    entity.claims.append(claim_existence(sirene_fixture(entity.name), today=TODAY))
+    return entity
+
+
+def verified(entity: Noyau) -> Noyau:
+    """Le Noyau avec les deux preuves: existence SIRENE + contrôle par domaine."""
+    referenced(entity)
+    control, code = issue_code_domaine(
+        entity.entity_id, "contact@atelier-ferrand.fr", "https://atelier-ferrand.fr"
+    )
     entity.claims.append(confirm_code(control, code, today=TODAY))
     return entity
 
 
 class TestRequireVerifiedIdentity(unittest.TestCase):
-    """Publier une fiche, même minimale, sans les deux preuves d'identité
-    ouvrirait la porte à l'usurpation — voir `noyau.noyau.Noyau.is_publication_ready`.
-    Le paramètre est opt-in (défaut faux) pour ne rien casser des appels
-    existants qui ne portent pas encore ces preuves."""
+    """Le modèle à deux états (docs/VERIFICATION.md §4): l'existence SIRENE
+    suffit à une fiche référencée étiquetée « non revendiquée » ; le badge
+    vérifié et toute donnée déclarative (distribution complète) exigent en
+    plus le contrôle de l'établissement. Le paramètre est opt-in (défaut
+    faux) pour ne rien casser des appels existants."""
 
     def test_default_does_not_require_identity_verification(self):
         """Comportement historique inchangé: aucun appelant existant ne doit
@@ -559,56 +574,100 @@ class TestRequireVerifiedIdentity(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             report = generate(core(), BASE, tmp, TODAY)
         self.assertEqual(report["distribution"], COMPLET)
+        self.assertIsNone(report["verification_status"])
 
-    def test_refuses_when_flag_is_set_and_identity_is_unverified(self):
+    def test_refuses_everything_without_at_least_existence(self):
+        for distribution in (MINIMAL, COMPLET):
+            with TemporaryDirectory() as tmp:
+                with self.assertRaises(VerificationRefusee):
+                    generate(
+                        core(), BASE, tmp, TODAY,
+                        distribution=distribution, require_verified_identity=True,
+                    )
+
+    def test_existence_alone_publishes_a_referenced_minimal_fiche(self):
+        """Exister est un droit: les données publiques du répertoire se
+        publient sans revendication — mais jamais sans étiquette."""
         with TemporaryDirectory() as tmp:
-            with self.assertRaises(VerificationRefusee):
-                generate(core(), BASE, tmp, TODAY, require_verified_identity=True)
+            report = generate(
+                referenced(core()), BASE, tmp, TODAY,
+                distribution=MINIMAL, require_verified_identity=True,
+            )
+        self.assertEqual(report["pages"], 1)
+        self.assertEqual(report["verification_status"], NON_REVENDIQUEE)
 
-    def test_refuses_for_minimal_distribution_too(self):
-        """La règle protège aussi la fiche gratuite: le registre n'a pas de
-        palier où une identité non contrôlée serait publiable."""
+    def test_existence_alone_never_opens_the_full_distribution(self):
+        """La profondeur est déclarative: personne n'est cru sur parole sans
+        avoir prouvé contrôler l'établissement."""
         with TemporaryDirectory() as tmp:
             with self.assertRaises(VerificationRefusee):
                 generate(
-                    core(), BASE, tmp, TODAY,
-                    distribution=MINIMAL, require_verified_identity=True,
+                    referenced(core()), BASE, tmp, TODAY,
+                    distribution=COMPLET, require_verified_identity=True,
                 )
 
-    def test_succeeds_once_both_proofs_are_verified(self):
+    def test_both_proofs_open_the_full_distribution(self):
         with TemporaryDirectory() as tmp:
             report = generate(
                 verified(core()), BASE, tmp, TODAY, require_verified_identity=True,
             )
-        self.assertGreaterEqual(report["pages"], 1)
+        self.assertGreater(report["pages"], 1)
+        self.assertEqual(report["verification_status"], VERIFIEE_DOMAINE)
 
-    def test_existence_alone_is_not_enough_to_publish(self):
-        entity = core()
-        entreprise = by_siren(
-            "123456789",
-            fetch=lambda url: {
-                "results": [
-                    {
-                        "siren": "123456789",
-                        "nom_complet": entity.name,
-                        "date_creation": "2015-03-12",
-                        "date_fermeture": None,
-                        "nombre_etablissements": 1,
-                        "siege": {
-                            "siret": "12345678900012",
-                            "adresse": "1 rue de la République",
-                            "code_postal": "33000",
-                            "libelle_commune": "Bordeaux",
-                            "etat_administratif": ACTIF,
-                        },
-                    }
-                ]
-            },
-        )
-        entity.claims.append(claim_existence(entreprise, today=TODAY))
+
+class TestReferencedFicheLabeling(unittest.TestCase):
+    """La fiche référencée dit ce qu'elle est, partout où un agent lit:
+    HTML, JSON-LD, Markdown, llms.txt. Une distinction honnête vaut mieux
+    qu'une distinction masquée."""
+
+    def render(self, entity: Noyau) -> dict:
         with TemporaryDirectory() as tmp:
-            with self.assertRaises(VerificationRefusee):
-                generate(entity, BASE, tmp, TODAY, require_verified_identity=True)
+            generate(
+                entity, BASE, tmp, TODAY,
+                distribution=MINIMAL, require_verified_identity=True,
+            )
+            return {
+                "html": (Path(tmp) / "index.html").read_text(encoding="utf-8"),
+                "md": (Path(tmp) / "index.md").read_text(encoding="utf-8"),
+                "llms": (Path(tmp) / "llms.txt").read_text(encoding="utf-8"),
+            }
+
+    def test_non_revendiquee_is_labeled_on_every_surface(self):
+        rendered = self.render(referenced(core()))
+        for name, corpus in rendered.items():
+            self.assertIn("non revendiquée", corpus.lower(), name)
+
+    def test_the_jsonld_carries_a_machine_readable_status(self):
+        rendered = self.render(referenced(core()))
+        document = extract_jsonld(rendered["html"])
+        statuses = [
+            p["value"]
+            for p in document.get("additionalProperty", [])
+            if p.get("name") == "verification_status"
+        ]
+        self.assertEqual(statuses, [NON_REVENDIQUEE])
+
+    def test_a_claimed_fiche_shows_its_channel_instead(self):
+        rendered = self.render(verified(core()))
+        self.assertNotIn("non revendiquée", rendered["html"].lower())
+        self.assertIn(VERIFIEE_DOMAINE, rendered["html"])
+        document = extract_jsonld(rendered["html"])
+        statuses = [
+            p["value"]
+            for p in document.get("additionalProperty", [])
+            if p.get("name") == "verification_status"
+        ]
+        self.assertEqual(statuses, [VERIFIEE_DOMAINE])
+
+    def test_a_referenced_fiche_still_carries_no_declarative_data(self):
+        """Le pire scénario de l'état référencé serait d'y laisser fuir des
+        données déclaratives: la fixture a des chantiers dans son Noyau,
+        aucun ne doit apparaître."""
+        rendered = self.render(referenced(core()))
+        for corpus in rendered.values():
+            self.assertNotIn("<table", corpus.lower())
+            self.assertNotIn("budget médian", corpus.lower())
+            self.assertNotIn("qualibat", corpus.lower())
 
 
 if __name__ == "__main__":

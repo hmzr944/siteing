@@ -58,6 +58,16 @@ l'ingestion et le stockage, pas un poste de vérification qui n'existe pas.
 C'est ce qui rend le gratuit publié soutenable à grande échelle : le seul
 coût qui grandit avec le volume est déjà dans le modèle.
 
+Une nuance chiffrée depuis (`docs/VERIFICATION.md`) : l'API ne fournit
+**aucun canal de contact** (vérifié en réel — ni e-mail ni téléphone, pour
+aucun établissement), donc la **revendication** d'une fiche passe soit par
+le domaine propre de l'entreprise (coût nul, minutes), soit par un
+**courrier au siège** (~1-2 € l'envoi, ~1 semaine). C'est un coût
+**d'acquisition ponctuel** par fiche revendiquée, pas un coût mensuel de
+service : il n'entre pas dans `cost_free_per_user`, il s'amortit dans le CAC
+du mouvement concerné — et seulement pour les entreprises sans domaine, qui
+sont celles que la voie express ne couvre pas.
+
 ## 1. Deux mouvements commerciaux, deux unités économiques
 
 Les confondre en un ARPU moyen — ce que faisait la version précédente de ce

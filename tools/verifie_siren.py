@@ -54,6 +54,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  adresse  : {entreprise.adresse}, {entreprise.code_postal} {entreprise.commune}")
             print(f"  créée le : {entreprise.date_creation}")
             print(f"  actif    : {entreprise.est_actif}")
+            print(f"  diffusible : {entreprise.est_diffusible}")
             print(f"  établissements : {entreprise.nombre_etablissements}")
     except VerificationRefusee as exc:
         print(f"REFUSÉ — {exc}")

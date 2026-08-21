@@ -34,8 +34,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--require-verified-identity", action="store_true",
         help=(
-            "refuse de publier si l'existence légale (SIRENE) et le contrôle "
-            "de l'établissement (code envoyé) ne sont pas tous deux vérifiés"
+            "applique le modèle à deux états (docs/VERIFICATION.md §4): "
+            "minimal exige l'existence SIRENE (fiche référencée si non "
+            "revendiquée), complet exige aussi le contrôle de l'établissement"
         ),
     )
     args = parser.parse_args(argv)
@@ -51,7 +52,9 @@ def main(argv: list[str] | None = None) -> int:
         print(f"REFUSÉ — {exc}")
         return 1
 
-    print(f"SURFACES — {core.name} ({report['distribution']})")
+    statut = report["verification_status"]
+    etiquette = f", fiche {statut}" if statut else ""
+    print(f"SURFACES — {core.name} ({report['distribution']}{etiquette})")
     print(
         f"{report['pages']} pages ({report['territoires']} territoires, "
         f"{report['croisements']} croisements dont {report['avec_budget']} avec budget)"

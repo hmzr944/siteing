@@ -48,9 +48,12 @@ Le livrable, du gratuit à l'exclusif :
    **automatiquement**, gratuitement, via le répertoire public SIRENE ; les
    chantiers sur pièce et les certifications exigent un **contrôle humain**,
    qui ne s'automatise pas. Voir `docs/ECONOMIE.md` §0 pour le chiffrage. Mais
-   exister sur SIRENE ne prouve pas *qui* inscrit la fiche : un contrôle de
-   l'établissement (code envoyé sur un canal déclaré, puis resaisi) est exigé
-   en plus, avant toute publication même gratuite — voir `docs/VERIFICATION.md`.
+   exister sur SIRENE ne prouve pas *qui* inscrit la fiche : le registre a
+   donc **deux états étiquetés** — la fiche **référencée** (données publiques
+   SIRENE uniquement, marquée « non revendiquée ») et la fiche **vérifiée**
+   (revendication prouvée par un code, reçu sur le domaine propre de
+   l'entreprise ou par courrier au siège). Toute donnée déclarative exige la
+   seconde — voir `docs/VERIFICATION.md`.
 3. **La distribution** — deux niveaux (`surfaces.MINIMAL` / `surfaces.COMPLET`),
    jamais un interrupteur payant/gratuit sur l'existence même. **Le registre
    publie sans exception** : toute entreprise vérifiée a une page et un

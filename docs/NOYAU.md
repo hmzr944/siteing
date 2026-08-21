@@ -160,12 +160,14 @@ la publication et entre dans le plan de travail, sans intervention humaine.
 **L'identité de l'entreprise elle-même suit la même mécanique**, avec deux
 affirmations dédiées (`noyau/verification.py`, détaillé dans
 `docs/VERIFICATION.md`) : `existence_siren` (automatisée, via le répertoire
-public SIRENE) et `controle_etablissement` (code envoyé sur un canal déclaré,
-puis resaisi — la preuve que c'est la bonne personne qui inscrit sa propre
-entreprise). `Noyau.is_publication_ready` exige les deux, vérifiées et à
-jour, avant qu'une fiche — même minimale — ne soit publiable : sans ce
-verrou, n'importe qui pourrait inscrire le concurrent d'en face avec de
-fausses coordonnées.
+public SIRENE) et `controle_etablissement` (un code reçu sur le domaine
+propre de l'entreprise ou par courrier au siège, puis resaisi — la preuve
+que c'est la bonne personne qui revendique sa propre fiche).
+`Noyau.verification_status` publie le niveau atteint : « non revendiquée »
+(fiche référencée, données publiques uniquement) ou « vérifiée par
+domaine/courrier ». `Noyau.is_publication_ready` exige les deux preuves —
+c'est la condition de toute donnée déclarative : sans ce verrou, n'importe
+qui pourrait inscrire le concurrent d'en face avec de fausses coordonnées.
 
 ---
 
