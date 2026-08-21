@@ -179,3 +179,85 @@ je ne peux pas vendre la même place deux fois. Je vous rappelle {date}. »
 
 Ces cinq chiffres se lisent ensemble : c'est le produit des trois premiers qui
 pilote le CAC, et le CAC qui décide si l'entreprise existe.
+
+## 7. L'appel du jour 7, par métier
+
+La question du jour 7 (§2) ne change pas de forme, mais l'objection qui suit
+n'est jamais la même selon le métier — parce que le rapport à la demande et
+à la réputation n'est pas le même. Trois scripts, calés sur les métiers déjà
+pris en charge de bout en bout (`metiers/*.json`) et sur les huit dossiers
+réels générés dans `markets/prospection/`.
+
+### Plombier
+
+Métier de flux tendu : beaucoup sont déjà pleins, l'urgence fait le chiffre.
+L'objection la plus probable n'est pas « ça ne marche pas », c'est **« j'ai
+déjà trop de travail »**.
+
+> « Vous avez vu la vidéo. Une question simple : un dimanche soir, une fuite,
+> quelqu'un demande à ChatGPT quel plombier appeler à {ville} — c'est {concurrent}
+> qui sort, pas vous. Ça vous est égal, ou vous préféreriez que ce soit vous
+> qui décrochiez cet appel-là ? »
+
+**« J'ai déjà trop de travail, je n'ai pas besoin de plus de clients. »**
+« Ce n'est pas un problème de volume, c'est un problème de tri. Vous avez déjà
+trop de demandes — la question, c'est qui reçoit les meilleures : les urgences
+bien payées ou les dépannages au rabais. Aujourd'hui, c'est {concurrent} qui
+choisit en premier, pas vous. »
+
+**« Je n'ai pas le temps de m'occuper de ça. »**
+« C'est justement pour ça que ça ne vous demande rien : pas de site à gérer,
+pas de contenu à écrire. Vous racontez vos chantiers à l'oral, cinq minutes,
+le reste se construit tout seul. »
+
+### Rénovateur
+
+Métier de gros montants et de cycle de décision long : le client compare, se
+renseigne, regarde des photos avant-après avant d'appeler. C'est le métier où
+la thèse de la dépossession porte le plus fort, parce que la recherche en
+amont y est déjà un réflexe.
+
+> « Vous avez vu la vidéo. Quelqu'un qui a un budget de 15 000 € pour sa
+> rénovation ne choisit pas au hasard — il compare. Aujourd'hui, quand il
+> demande à une IA, c'est {concurrent} qu'elle lui met en avant, avec des
+> exemples de chantiers. Vous, rien. Ça vous semble normal pour un budget
+> pareil ? »
+
+**« J'ai déjà un site avec mon book de réalisations. »**
+« Très bien, et ce book ne sert à rien tant qu'un humain ne l'a pas déjà
+trouvé. Ce qu'on construit n'est pas un book de plus, c'est ce qui fait qu'une
+IA cite vos chantiers réels — datés, chiffrés, localisés — au lieu de deviner.
+Ce sont deux problèmes différents, vous n'avez résolu que celui de la
+présentation, pas celui d'être trouvé en premier. »
+
+**« Mes clients viennent du bouche-à-oreille, pas d'internet. »**
+« Le bouche-à-oreille d'aujourd'hui, c'est aussi quelqu'un qui tape "qui
+recommandes-tu pour une rénovation à {ville}" dans un moteur de réponse
+avant même d'appeler les gens de son réseau. Le vôtre y est invisible ou
+absent — c'est exactement ce que le relevé montre. »
+
+### Expert-comptable / conseil
+
+Métier de confiance et de déontologie, marché souvent saturé localement (une
+dizaine de cabinets comparables dans une même ville n'est pas rare — voir
+`markets/prospection/*-toulouse.json`). Public très à l'aise avec les
+chiffres : l'argument qui porte le mieux est la mesure elle-même, pas
+l'émotion.
+
+> « Vous avez vu la vidéo. Un chiffre : sur {n} questions qu'un dirigeant se
+> pose avant de choisir un cabinet, vous apparaissez sur {x}. {Concurrent}
+> apparaît sur {y}. Ce n'est pas une opinion, c'est un relevé reproductible.
+> Vous voulez qu'on le refasse ensemble sur le panier complet ? »
+
+**« Je suis déjà référencé sur l'annuaire de l'Ordre. »**
+« L'annuaire de l'Ordre répond à "cette personne a-t-elle le droit
+d'exercer", pas à "lequel choisir". Une IA à qui on demande un cabinet ne va
+pas consulter l'annuaire ordinal, elle répond avec ce qu'elle a déjà lu sur
+vous — et le relevé montre ce qu'elle a lu, ou pas lu du tout. »
+
+**« Mes clients viennent par recommandation, je n'ai pas besoin de ça. »**
+« La recommandation reste la meilleure source — ça ne change pas. Ce qui
+change, c'est qu'avant de rappeler la personne qui vous recommande, de plus
+en plus de dirigeants vérifient d'abord ce qu'en dit une IA. Si elle cite un
+confrère à votre place à ce moment-là, la recommandation ne suffit plus à
+elle seule. »
