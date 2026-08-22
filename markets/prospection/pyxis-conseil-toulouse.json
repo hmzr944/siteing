@@ -1,0 +1,28 @@
+{
+  "id": "pyxis-conseil",
+  "label": "Pyxis Conseil — expertise comptable — Toulouse",
+  "category": "expertise comptable",
+  "zone": "Toulouse",
+  "entities": [
+    {
+      "name": "Pyxis Conseil",
+      "is_client": true,
+      "domains": []
+    },
+    {
+      "name": "Cabinet L",
+      "is_client": false,
+      "domains": []
+    },
+    {
+      "name": "AMG Conseils",
+      "is_client": false,
+      "domains": []
+    },
+    {
+      "name": "CS Conseil",
+      "is_client": false,
+      "domains": []
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "cabinet-l",
+  "label": "Cabinet L — expertise comptable — Toulouse",
+  "category": "expertise comptable",
+  "zone": "Toulouse",
+  "entities": [
+    {
+      "name": "Cabinet L",
+      "is_client": true,
+      "domains": []
+    },
+    {
+      "name": "AMG Conseils",
+      "is_client": false,
+      "domains": []
+    },
+    {
+      "name": "Pyxis Conseil",
+      "is_client": false,
+      "domains": []
+    },
+    {
+      "name": "CS Conseil",
+      "is_client": false,
+      "domains": []
+    }
+  ]
+}

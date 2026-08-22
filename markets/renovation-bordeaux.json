@@ -1,0 +1,251 @@
+{
+  "_note": "PANEL DE MESURE, pas liste de prospection. Vingt entreprises stratifiées par rang Google afin de pouvoir calculer la corrélation entre rang Google et citation par les moteurs de réponse. La liste de vente (le ventre mou) est un autre document et ne doit jamais être confondue avec celle-ci. Tous les noms sont fictifs; les rangs et les valeurs 'strength' sont des valeurs de démonstration destinées au moteur simulé. Aucun chiffre produit à partir de ce fichier ne dit quoi que ce soit du marché réel. Le champ 'treated_since' marque les entreprises pour lesquelles des surfaces ont été publiées: elles forment le groupe traité, le reste du panel sert de témoin.",
+  "id": "renovation-bordeaux",
+  "label": "Rénovation d'habitat — Bordeaux Métropole",
+  "category": "entreprise de rénovation",
+  "category_plural": "entreprises de rénovation",
+  "zone": "Bordeaux",
+  "districts": [
+    "aux Chartrons",
+    "à Caudéran",
+    "à Saint-Michel",
+    "à Nansouty",
+    "à la Bastide",
+    "au Bouscat",
+    "à Talence",
+    "à Bacalan"
+  ],
+  "services": [
+    "la rénovation complète d'une échoppe bordelaise",
+    "une isolation par l'extérieur",
+    "la rénovation d'une salle de bain",
+    "un ravalement de façade en pierre de taille",
+    "la pose d'une verrière d'atelier",
+    "une rénovation énergétique globale"
+  ],
+  "constraints": [
+    "certifié RGE",
+    "éligible à MaPrimeRénov",
+    "avec garantie décennale à jour",
+    "capable de démarrer sous trois mois",
+    "au forfait, sans dépassement"
+  ],
+  "entities": [
+    {
+      "id": "ferrand",
+      "name": "Atelier Ferrand",
+      "domains": [
+        "atelier-ferrand.fr"
+      ],
+      "google_rank": 2,
+      "segment": "rang 1-10",
+      "strength": 0.72,
+      "treated_since": "2026-09-01"
+    },
+    {
+      "id": "renov-aquitaine",
+      "name": "Rénov'Aquitaine",
+      "domains": [
+        "renov-aquitaine.fr"
+      ],
+      "google_rank": 4,
+      "segment": "rang 1-10",
+      "strength": 0.35
+    },
+    {
+      "id": "delaunay",
+      "name": "Maison Delaunay",
+      "domains": [
+        "maison-delaunay.fr"
+      ],
+      "google_rank": 6,
+      "segment": "rang 1-10",
+      "strength": 0.28
+    },
+    {
+      "id": "girondin-batisseur",
+      "name": "Girondin Bâtisseur",
+      "domains": [
+        "girondin-batisseur.fr"
+      ],
+      "google_rank": 8,
+      "segment": "rang 1-10",
+      "strength": 0.81
+    },
+    {
+      "id": "lartigue",
+      "name": "Maison Lartigue",
+      "domains": [
+        "maison-lartigue.fr"
+      ],
+      "google_rank": 9,
+      "segment": "rang 1-10",
+      "strength": 0.19
+    },
+    {
+      "id": "cazenave",
+      "name": "Habitat Cazenave",
+      "domains": [
+        "habitat-cazenave.fr"
+      ],
+      "google_rank": 12,
+      "segment": "rang 11-30",
+      "strength": 0.66
+    },
+    {
+      "id": "compagnons-port",
+      "name": "Les Compagnons du Port",
+      "domains": [
+        "compagnons-du-port.fr"
+      ],
+      "google_rank": 14,
+      "segment": "rang 11-30",
+      "strength": 0.24
+    },
+    {
+      "id": "saint-genes",
+      "name": "Atelier Saint-Genès",
+      "domains": [
+        "atelier-saint-genes.fr"
+      ],
+      "google_rank": 17,
+      "segment": "rang 11-30",
+      "strength": 0.88
+    },
+    {
+      "id": "lasserre",
+      "name": "Rénovation Lasserre",
+      "aliases": [
+        "Lasserre Rénovation"
+      ],
+      "domains": [
+        "renovation-lasserre.fr"
+      ],
+      "google_rank": 22,
+      "segment": "rang 11-30",
+      "strength": 0.31,
+      "treated_since": "2026-09-01"
+    },
+    {
+      "id": "mirambeau",
+      "name": "Atelier Mirambeau",
+      "domains": [
+        "atelier-mirambeau.fr"
+      ],
+      "google_rank": 25,
+      "segment": "rang 11-30",
+      "strength": 0.15,
+      "treated_since": "2026-09-15"
+    },
+    {
+      "id": "duviella",
+      "name": "Duviella Rénovation",
+      "domains": [
+        "duviella.fr"
+      ],
+      "google_rank": 27,
+      "segment": "rang 11-30",
+      "strength": 0.54
+    },
+    {
+      "id": "fil-a-plomb",
+      "name": "Le Fil à Plomb",
+      "domains": [
+        "lefilaplomb.fr"
+      ],
+      "google_rank": 29,
+      "segment": "rang 11-30",
+      "strength": 0.21
+    },
+    {
+      "id": "artisans-garonne",
+      "name": "Artisans de la Garonne",
+      "domains": [
+        "artisans-garonne.fr"
+      ],
+      "google_rank": 31,
+      "segment": "rang 31+",
+      "strength": 0.77
+    },
+    {
+      "id": "sarraute",
+      "name": "Maison Sarraute",
+      "domains": [
+        "maison-sarraute.fr"
+      ],
+      "google_rank": 34,
+      "segment": "rang 31+",
+      "strength": 0.12,
+      "treated_since": "2026-09-15"
+    },
+    {
+      "id": "loustau",
+      "name": "Atelier Loustau",
+      "domains": [
+        "atelier-loustau.fr"
+      ],
+      "google_rank": 39,
+      "segment": "rang 31+",
+      "strength": 0.43
+    },
+    {
+      "id": "bastide-renov",
+      "name": "Bastide Habitat",
+      "domains": [
+        "bastide-habitat.fr"
+      ],
+      "google_rank": 43,
+      "segment": "rang 31+",
+      "strength": 0.09
+    },
+    {
+      "id": "peyrouny",
+      "name": "Atelier Peyrouny",
+      "domains": [
+        "atelier-peyrouny.fr"
+      ],
+      "google_rank": 47,
+      "segment": "rang 31+",
+      "strength": 0.62
+    },
+    {
+      "id": "duprat",
+      "name": "Habitat Duprat",
+      "domains": [
+        "habitat-duprat.fr"
+      ],
+      "google_rank": 52,
+      "segment": "rang 31+",
+      "strength": 0.17
+    },
+    {
+      "id": "vignau",
+      "name": "Charpente Vignau",
+      "domains": [
+        "charpente-vignau.fr"
+      ],
+      "google_rank": 58,
+      "segment": "rang 31+",
+      "strength": 0.38
+    },
+    {
+      "id": "lespiault",
+      "name": "Lespiault & Fils",
+      "aliases": [
+        "Lespiault"
+      ],
+      "domains": [
+        "lespiault-fils.fr"
+      ],
+      "google_rank": 64,
+      "segment": "rang 31+",
+      "strength": 0.26
+    }
+  ],
+  "economics": {
+    "monthly_intent_volume": 320,
+    "avg_deal_value": 12000,
+    "close_rate": 0.12,
+    "max_monthly_deals": 2
+  }
+}

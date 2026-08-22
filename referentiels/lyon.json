@@ -1,0 +1,65 @@
+{
+  "_note": "Référentiel géographique de démonstration pour Lyon, au même format que bordeaux.json — la preuve que le mécanisme sert n'importe quelle ville sans changer une ligne de code.",
+  "territoires": [
+    {
+      "code": "lyon-metropole",
+      "name": "Métropole de Lyon",
+      "level": "metropole",
+      "aliases": ["la métropole", "Grand Lyon"]
+    },
+    {
+      "code": "lyon",
+      "name": "Lyon",
+      "level": "commune",
+      "parent": "lyon-metropole"
+    },
+    {
+      "code": "villeurbanne",
+      "name": "Villeurbanne",
+      "level": "commune",
+      "parent": "lyon-metropole"
+    },
+    {
+      "code": "croix-rousse",
+      "name": "la Croix-Rousse",
+      "level": "quartier",
+      "parent": "lyon",
+      "aliases": ["Croix-Rousse", "pentes de la Croix-Rousse", "plateau de la Croix-Rousse"]
+    },
+    {
+      "code": "presquile",
+      "name": "la Presqu'île",
+      "level": "quartier",
+      "parent": "lyon",
+      "aliases": ["Presqu'île", "presquile", "Bellecour", "rue de la République"]
+    },
+    {
+      "code": "part-dieu",
+      "name": "la Part-Dieu",
+      "level": "quartier",
+      "parent": "lyon",
+      "aliases": ["Part-Dieu", "quartier de la Part-Dieu"]
+    },
+    {
+      "code": "vieux-lyon",
+      "name": "le Vieux Lyon",
+      "level": "quartier",
+      "parent": "lyon",
+      "aliases": ["Vieux Lyon", "Saint-Jean"]
+    },
+    {
+      "code": "guillotiere",
+      "name": "la Guillotière",
+      "level": "quartier",
+      "parent": "lyon",
+      "aliases": ["Guillotière", "rue de Marseille"]
+    },
+    {
+      "code": "gratte-ciel",
+      "name": "Gratte-Ciel",
+      "level": "quartier",
+      "parent": "villeurbanne",
+      "aliases": ["quartier Gratte-Ciel", "cours Émile Zola"]
+    }
+  ]
+}

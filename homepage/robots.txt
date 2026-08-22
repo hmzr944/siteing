@@ -1,0 +1,45 @@
+# Autorisations explicites pour les robots d'indexation et d'IA.
+# Autoriser un robot d'entraînement implique que le contenu publié
+# puisse servir à entraîner un modèle. C'est un choix assumé: l'objet
+# de ces pages est d'être lues, reprises et citées.
+
+# GPTBot — OpenAI, entraînement
+User-agent: GPTBot
+Allow: /
+
+# OAI-SearchBot — OpenAI, recherche dans ChatGPT
+User-agent: OAI-SearchBot
+Allow: /
+
+# ChatGPT-User — OpenAI, navigation déclenchée par un utilisateur
+User-agent: ChatGPT-User
+Allow: /
+
+# ClaudeBot — Anthropic, entraînement et recherche
+User-agent: ClaudeBot
+Allow: /
+
+# Claude-User — Anthropic, navigation déclenchée par un utilisateur
+User-agent: Claude-User
+Allow: /
+
+# PerplexityBot — Perplexity, index de réponse
+User-agent: PerplexityBot
+Allow: /
+
+# Google-Extended — Google, ancrage et entraînement de Gemini
+User-agent: Google-Extended
+Allow: /
+
+# Applebot-Extended — Apple, entraînement
+User-agent: Applebot-Extended
+Allow: /
+
+# CCBot — Common Crawl, corpus repris par de nombreux modèles
+User-agent: CCBot
+Allow: /
+
+User-agent: *
+Allow: /
+
+Sitemap: https://airain.fr/sitemap.xml

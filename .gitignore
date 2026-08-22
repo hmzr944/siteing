@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Sorties de relevés: régénérables, jamais versionnées.
+out/
+
+# Réponses brutes archivées. Elles servent la contestation d'un chiffre et
+# peuvent contenir des données de prospects: elles n'ont pas leur place dans
+# un dépôt de code.
+archives/
+
+# Registre des créneaux: état d'exploitation, pas du code.
+registre/
+
+# Vagues de mesure: archives d'exploitation, régénérables.
+vagues/
+
+# État des fils de dialogue: exploitation, pas code.
+conversations/

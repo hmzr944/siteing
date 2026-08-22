@@ -1,0 +1,40 @@
+{
+  "entreprise_id": "atelier-ferrand",
+  "entreprise_nom": "Atelier Ferrand",
+  "date_entretien": "2026-08-18",
+  "protocole_hash": "f1dca50571f9",
+  "h1": {
+    "constats": [
+      {
+        "description": "absent des 3 premières réponses sur \"rénovation salle de bain Bordeaux\"",
+        "source": "citation_audit",
+        "juge_important": true
+      },
+      {
+        "description": "surpris de ne voir aucun concurrent connu cité non plus",
+        "source": "observation_directe",
+        "juge_important": false
+      }
+    ],
+    "audit_json": "out/atelier-ferrand-audit.json",
+    "presence_rate": 0.15,
+    "action_engagee": "dossier proposé en échange de 3 factures",
+    "action_realisee_le": null
+  },
+  "h2": {
+    "evenements": {
+      "periode_jours": 7,
+      "recues": 12,
+      "repondues_moins_5min": 2,
+      "repondues_5_60min": 4,
+      "repondues_plus_1h": 3,
+      "sans_reponse": 3,
+      "necessitant_devis": 8,
+      "qualifiees": 6
+    },
+    "type_repetitif_identifie": "demandes de prix un week-end, jamais rappelées avant le lundi",
+    "action_engagee": null,
+    "action_realisee_le": null
+  },
+  "notes": "Gabarit d'exemple: montre la forme attendue, pas un résultat réel."
+}
