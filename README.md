@@ -1,5 +1,7 @@
 # Source Primaire
 
+> **Projet conçu et piloté par Hamza Mezouar** — idée, cahier des charges, choix produit, tests et mise en ligne. Le code a été écrit en grande partie avec l'assistance d'agents IA (Claude), sous ma direction : je définis les besoins, je relis, je teste et je décide.
+
 **L'IA n'a pas tué les agences web. Elle a tué la valeur de l'objet « site web ».**
 
 Fabriquer un site ne vaut plus rien : Base44, Lovable, Bolt, v0, Framer AI le font
