@@ -1,0 +1,23 @@
+{
+  "id": "plombier-7",
+  "label": "Plombier 7 — plomberie — Lyon",
+  "category": "plomberie",
+  "zone": "Lyon",
+  "entities": [
+    {
+      "name": "Plombier 7",
+      "is_client": true,
+      "domains": []
+    },
+    {
+      "name": "Accès Plomberie",
+      "is_client": false,
+      "domains": []
+    },
+    {
+      "name": "Blicko",
+      "is_client": false,
+      "domains": []
+    }
+  ]
+}

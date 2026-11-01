@@ -1,0 +1,148 @@
+{
+  "_note": "Dossier de démonstration. Entreprise, pièces et références fictives. Le mélange de statuts est volontaire: un dossier réel n'est jamais vérifié à 100 %, et une page qui le prétendrait ne serait pas crédible.",
+  "entity_id": "vasseur",
+  "name": "Plomberie Vasseur",
+  "category": "plombier",
+  "zone": "Bordeaux Métropole",
+  "legal_id": "512847193",
+  "contact_url": "https://plomberie-vasseur.fr/",
+  "updated_on": "2026-08-01",
+  "claims": [
+    {
+      "key": "existence",
+      "label": "Existence légale",
+      "value": "SARL immatriculée au RCS de Bordeaux depuis mars 2009",
+      "cluster": "identite",
+      "schema_property": "foundingDate",
+      "verified_on": "2026-03-12",
+      "valid_until": "2027-03-12",
+      "evidence": [
+        {
+          "kind": "immatriculation",
+          "reference": "RCS BX 512847193",
+          "issued_on": "2026-03-05",
+          "checked_by": "Source Primaire"
+        }
+      ],
+      "schema_value": "2009-03"
+    },
+    {
+      "key": "decennale",
+      "label": "Assurance décennale",
+      "value": "Responsabilité décennale, plomberie et sanitaire",
+      "cluster": "identite",
+      "verified_on": "2025-01-15",
+      "valid_until": "2026-01-15",
+      "evidence": [
+        {
+          "kind": "assurance",
+          "reference": "Police 4471-882-C",
+          "issued_on": "2025-01-10",
+          "checked_by": "Source Primaire"
+        }
+      ]
+    },
+    {
+      "key": "effectif",
+      "label": "Effectif technique",
+      "value": "4 plombiers salariés, 3 véhicules équipés",
+      "cluster": "capacite",
+      "schema_property": "numberOfEmployees",
+      "verified_on": "2026-06-04",
+      "valid_until": "2027-06-04",
+      "evidence": [
+        {
+          "kind": "releve",
+          "reference": "DSN 2026-05",
+          "issued_on": "2026-06-01",
+          "checked_by": "Source Primaire"
+        }
+      ],
+      "schema_value": "4"
+    },
+    {
+      "key": "rge",
+      "label": "Qualification RGE",
+      "value": "RGE QualiPAC, pompes à chaleur et chauffe-eau thermodynamiques",
+      "cluster": "capacite",
+      "schema_property": "hasCredential",
+      "verified_on": "2025-09-20",
+      "valid_until": "2026-09-20",
+      "evidence": [
+        {
+          "kind": "certification",
+          "reference": "QP-2025-33-0471",
+          "issued_on": "2025-09-18",
+          "checked_by": "Qualit'EnR"
+        }
+      ],
+      "schema_value": "RGE QualiPAC"
+    },
+    {
+      "key": "detection-fuite",
+      "label": "Recherche de fuite non destructive",
+      "value": "Caméra thermique et gaz traceur, sans casse",
+      "cluster": "capacite"
+    },
+    {
+      "key": "delai-urgence",
+      "label": "Délai d'intervention en urgence",
+      "value": "Sous 2 heures en journée, constaté sur 41 interventions",
+      "cluster": "engagement",
+      "verified_on": "2026-07-02",
+      "valid_until": "2027-01-02",
+      "evidence": [
+        {
+          "kind": "releve",
+          "reference": "Journal d'interventions 2026-T2",
+          "issued_on": "2026-07-01",
+          "checked_by": "Source Primaire"
+        },
+        {
+          "kind": "facture",
+          "reference": "Échantillon 12 factures acquittées",
+          "issued_on": "2026-07-01",
+          "checked_by": "Source Primaire"
+        }
+      ]
+    },
+    {
+      "key": "devis",
+      "label": "Devis écrit avant intervention",
+      "value": "Devis gratuit et signé avant tout démarrage, hors urgence vitale",
+      "cluster": "engagement",
+      "verified_on": "2026-03-12",
+      "valid_until": "2027-03-12",
+      "evidence": [
+        {
+          "kind": "contrat",
+          "reference": "Conditions générales v4",
+          "issued_on": "2026-02-20",
+          "checked_by": "Source Primaire"
+        }
+      ]
+    },
+    {
+      "key": "astreinte",
+      "label": "Astreinte week-end",
+      "value": "Samedi et dimanche, 8h à 20h",
+      "cluster": "engagement"
+    },
+    {
+      "key": "zone-couverte",
+      "label": "Zone d'intervention",
+      "value": "Bordeaux Métropole et 25 km autour",
+      "cluster": "couverture",
+      "verified_on": "2026-07-02",
+      "valid_until": "2027-07-02",
+      "evidence": [
+        {
+          "kind": "facture",
+          "reference": "Adresses de 60 chantiers 2026",
+          "issued_on": "2026-07-01",
+          "checked_by": "Source Primaire"
+        }
+      ]
+    }
+  ]
+}

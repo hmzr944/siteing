@@ -1,0 +1,28 @@
+{
+  "id": "renoveo",
+  "label": "RénovéO — rénovation — Nantes",
+  "category": "rénovation",
+  "zone": "Nantes",
+  "entities": [
+    {
+      "name": "RénovéO",
+      "is_client": true,
+      "domains": []
+    },
+    {
+      "name": "Ocordo Travaux",
+      "is_client": false,
+      "domains": []
+    },
+    {
+      "name": "Avenir Rénovations",
+      "is_client": false,
+      "domains": []
+    },
+    {
+      "name": "Creatis Habitat",
+      "is_client": false,
+      "domains": []
+    }
+  ]
+}

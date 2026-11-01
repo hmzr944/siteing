@@ -1,0 +1,11 @@
+{
+  "_note": "Référentiel minimal pour une entreprise sans ancrage géographique local (conseil, formation, freelance à distance). Une seule racine, aucun quartier: Noyau.zone s'en déduit ('France'), et les chantiers de ce Noyau n'ont simplement pas de territoire à prouver.",
+  "territoires": [
+    {
+      "code": "france",
+      "name": "France",
+      "level": "metropole",
+      "aliases": ["national", "toute la France", "à distance"]
+    }
+  ]
+}

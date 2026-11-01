@@ -1,0 +1,30 @@
+{
+  "metier": "conseil",
+  "label": "Conseil et accompagnement professionnel",
+  "natures": {
+    "mission-conseil": {
+      "label": "Mission de conseil",
+      "unit": "jour",
+      "bands": [[0, 3], [3, 10], [10, null]],
+      "keywords": ["mission de conseil", "mission conseil", "accompagnement strategique"]
+    },
+    "audit-professionnel": {
+      "label": "Audit",
+      "unit": "jour",
+      "bands": [[0, 2], [2, 5], [5, null]],
+      "keywords": ["audit"]
+    },
+    "formation-professionnelle": {
+      "label": "Formation professionnelle",
+      "unit": "jour",
+      "bands": [[0, 1], [1, 3], [3, null]],
+      "keywords": ["formation", "session de formation"]
+    },
+    "consultation-ponctuelle": {
+      "label": "Consultation ponctuelle",
+      "unit": "heure",
+      "bands": [[0, 2], [2, 5], [5, null]],
+      "keywords": ["consultation", "rendez-vous conseil", "seance de conseil"]
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "_note": "Marché de démonstration. Tous les noms d'entreprises sont fictifs et ne désignent aucune société réelle. Le champ 'strength' n'est utilisé que par le moteur simulé.",
+  "id": "plombier-bordeaux",
+  "label": "Plomberie — Bordeaux Métropole",
+  "category": "plombier",
+  "category_plural": "plombiers",
+  "zone": "Bordeaux",
+  "services": [
+    "une recherche de fuite",
+    "le remplacement d'un chauffe-eau",
+    "un débouchage de canalisation",
+    "la rénovation d'une salle de bain"
+  ],
+  "constraints": [
+    "disponible le week-end",
+    "en urgence sous 2 heures",
+    "avec devis gratuit",
+    "certifié RGE"
+  ],
+  "economics": {
+    "monthly_intent_volume": 1400,
+    "avg_deal_value": 420,
+    "close_rate": 0.22
+  },
+  "entities": [
+    {
+      "id": "vasseur",
+      "name": "Plomberie Vasseur",
+      "aliases": ["Vasseur Plomberie", "SARL Vasseur"],
+      "domains": ["plomberie-vasseur.fr"],
+      "is_client": true,
+      "strength": 0.16
+    },
+    { "id": "aquitaine-depannage", "name": "Aquitaine Dépannage", "domains": ["aquitaine-depannage.fr"], "strength": 0.94 },
+    { "id": "sud-ouest-sanitaire", "name": "Sud-Ouest Sanitaire", "domains": ["so-sanitaire.fr"], "strength": 0.78 },
+    { "id": "compagnons-garonne", "name": "Les Compagnons de la Garonne", "aliases": ["Compagnons de la Garonne"], "domains": ["compagnons-garonne.fr"], "strength": 0.61 },
+    { "id": "girondine-chauffage", "name": "Girondine Chauffage", "domains": ["girondine-chauffage.fr"], "strength": 0.49 },
+    { "id": "hydrolys", "name": "Hydrolys", "domains": ["hydrolys.fr"], "strength": 0.34 },
+    { "id": "ateliers-peyrat", "name": "Ateliers Peyrat", "aliases": ["Peyrat"], "domains": ["ateliers-peyrat.fr"], "strength": 0.27 }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "metier": "plomberie",
+  "label": "Plomberie",
+  "natures": {
+    "chauffe-eau": {
+      "label": "Remplacement de chauffe-eau",
+      "unit": "litre",
+      "bands": [[0, 100], [100, 200], [200, null]],
+      "keywords": ["chauffe-eau", "chauffe eau", "ballon d'eau chaude", "cumulus"]
+    },
+    "chaudiere": {
+      "label": "Installation de chaudière",
+      "unit": "kw",
+      "bands": [[0, 15], [15, 25], [25, null]],
+      "keywords": ["chaudiere"]
+    },
+    "salle-d-eau-plomberie": {
+      "label": "Plomberie de salle d'eau",
+      "unit": "point d'eau",
+      "bands": [[0, 3], [3, 6], [6, null]],
+      "keywords": ["plomberie de salle d'eau", "salle d'eau"]
+    },
+    "debouchage": {
+      "label": "Débouchage de canalisation",
+      "unit": "intervention",
+      "bands": [[0, null]],
+      "unit_price_meaningful": false,
+      "keywords": ["debouchage", "canalisation bouchee", "deboucher"]
+    },
+    "recherche-fuite": {
+      "label": "Recherche et réparation de fuite",
+      "unit": "intervention",
+      "bands": [[0, null]],
+      "unit_price_meaningful": false,
+      "keywords": ["recherche de fuite", "fuite d'eau", "reparation de fuite"]
+    }
+  },
+  "typologies": {
+    "echoppe": "Échoppe bordelaise",
+    "immeuble-pierre": "Immeuble en pierre de taille",
+    "appartement": "Appartement",
+    "maison": "Maison individuelle",
+    "local-commercial": "Local commercial"
+  }
+}

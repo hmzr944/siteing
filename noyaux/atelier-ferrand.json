@@ -1,0 +1,85 @@
+{
+  "_note": "Noyau de démonstration. Entreprise, chantiers, montants et références de pièces sont fictifs. Le mélange volontaire de provenances et d'anciennetés sert à exercer les seuils: certains quartiers et budgets franchissent le seuil de publication, d'autres non, et ce sont ces derniers qui forment le plan de travail.",
+  "entity_id": "ferrand",
+  "name": "Atelier Ferrand",
+  "category": "entreprise de rénovation",
+  "legal_id": "481293756",
+  "contact_url": "https://atelier-ferrand.fr/",
+
+  "chantiers": [
+    { "id": "sdb-01", "nature": "salle-de-bain", "territoire": "chartrons", "typologie": "echoppe", "completed_on": "2025-03-14", "size": 6.0, "budget_eur": 11200, "duration_days": 12, "provenance": "facture", "reference": "F2025-041", "photos": ["sdb-01-a.jpg", "sdb-01-b.jpg"] },
+    { "id": "sdb-02", "nature": "salle-de-bain", "territoire": "chartrons", "typologie": "appartement", "completed_on": "2025-06-27", "size": 7.0, "budget_eur": 12800, "duration_days": 14, "provenance": "facture", "reference": "F2025-088" },
+    { "id": "sdb-03", "nature": "salle-de-bain", "territoire": "cauderan", "typologie": "maison", "completed_on": "2025-09-19", "size": 5.5, "budget_eur": 9800, "duration_days": 10, "provenance": "facture", "reference": "F2025-133" },
+    { "id": "sdb-04", "nature": "salle-de-bain", "territoire": "nansouty", "typologie": "echoppe", "completed_on": "2026-01-23", "size": 6.5, "budget_eur": 13500, "duration_days": 15, "provenance": "facture", "reference": "F2026-009" },
+    { "id": "sdb-05", "nature": "salle-de-bain", "territoire": "saint-michel", "typologie": "immeuble-pierre", "completed_on": "2026-04-08", "size": 7.5, "budget_eur": 11900, "duration_days": 13, "provenance": "facture", "reference": "F2026-047" },
+    { "id": "sdb-06", "nature": "salle-de-bain", "territoire": "chartrons", "typologie": "echoppe", "completed_on": "2026-06-30", "size": 6.0, "budget_eur": 10400, "duration_days": 11, "provenance": "devis", "reference": "D2026-112" },
+
+    { "id": "sdb-07", "nature": "salle-de-bain", "territoire": "talence", "typologie": "maison", "completed_on": "2025-11-12", "size": 9.0, "budget_eur": 16800, "duration_days": 18, "provenance": "facture", "reference": "F2025-171" },
+    { "id": "sdb-08", "nature": "salle-de-bain", "territoire": "le-bouscat", "typologie": "maison", "completed_on": "2026-02-17", "size": 10.5, "budget_eur": 19200, "provenance": "vocal", "notes": "Grande salle de bain avec double vasque, raconté au téléphone" },
+
+    { "id": "cui-01", "nature": "cuisine", "territoire": "chartrons", "typologie": "echoppe", "completed_on": "2025-05-06", "size": 12.0, "budget_eur": 21000, "duration_days": 16, "provenance": "facture", "reference": "F2025-072" },
+    { "id": "cui-02", "nature": "cuisine", "territoire": "cauderan", "typologie": "maison", "completed_on": "2026-03-11", "size": 10.0, "budget_eur": 18500, "duration_days": 14, "provenance": "facture", "reference": "F2026-031" },
+    { "id": "cui-03", "nature": "cuisine", "territoire": "saint-genes", "typologie": "appartement", "completed_on": "2026-05-20", "size": 13.0, "budget_eur": 24000, "provenance": "vocal", "notes": "Cuisine ouverte, verrière comprise" },
+
+    { "id": "glo-01", "nature": "renovation-globale", "territoire": "chartrons", "typologie": "echoppe", "completed_on": "2025-02-28", "size": 85.0, "budget_eur": 148000, "duration_days": 120, "provenance": "facture", "reference": "F2025-019" },
+    { "id": "glo-02", "nature": "renovation-globale", "territoire": "la-bastide", "typologie": "maison", "completed_on": "2025-10-30", "size": 72.0, "budget_eur": 121000, "duration_days": 95, "provenance": "facture", "reference": "F2025-152" },
+    { "id": "glo-03", "nature": "renovation-globale", "territoire": "cauderan", "typologie": "maison", "completed_on": "2026-02-06", "size": 92.0, "budget_eur": 165000, "duration_days": 135, "provenance": "facture", "reference": "F2026-014" },
+
+    { "id": "ite-01", "nature": "isolation-exterieure", "territoire": "cauderan", "typologie": "maison", "completed_on": "2025-07-18", "size": 110.0, "budget_eur": 24500, "duration_days": 21, "provenance": "facture", "reference": "F2025-104" },
+    { "id": "ite-02", "nature": "isolation-exterieure", "territoire": "cauderan", "typologie": "maison", "completed_on": "2026-01-09", "size": 95.0, "budget_eur": 21800, "duration_days": 18, "provenance": "facture", "reference": "F2026-004" },
+    { "id": "ite-03", "nature": "isolation-exterieure", "territoire": "talence", "typologie": "maison", "completed_on": "2026-05-15", "size": 120.0, "budget_eur": 27000, "duration_days": 24, "provenance": "facture", "reference": "F2026-058" },
+
+    { "id": "rav-01", "nature": "ravalement-pierre", "territoire": "chartrons", "typologie": "immeuble-pierre", "completed_on": "2025-04-22", "size": 80.0, "budget_eur": 32000, "duration_days": 30, "provenance": "facture", "reference": "F2025-061" }
+  ],
+
+  "claims": [
+    {
+      "key": "immatriculation",
+      "label": "Existence légale",
+      "value": "SARL immatriculée au RCS de Bordeaux depuis juin 2011",
+      "cluster": "identite",
+      "schema_property": "foundingDate",
+      "schema_value": "2011-06",
+      "verified_on": "2026-03-02",
+      "valid_until": "2027-03-02",
+      "evidence": [{ "kind": "immatriculation", "reference": "RCS BX 481293756", "issued_on": "2026-02-25", "checked_by": "Source Primaire" }]
+    },
+    {
+      "key": "decennale",
+      "label": "Assurance décennale",
+      "value": "Responsabilité décennale, tous corps d'état",
+      "cluster": "identite",
+      "verified_on": "2025-01-20",
+      "valid_until": "2026-01-20",
+      "evidence": [{ "kind": "assurance", "reference": "Police 7742-331-B", "issued_on": "2025-01-14", "checked_by": "Source Primaire" }]
+    },
+    {
+      "key": "rge",
+      "label": "Qualification RGE",
+      "value": "RGE Qualibat 7131, isolation thermique par l'extérieur",
+      "cluster": "capacite",
+      "schema_property": "hasCredential",
+      "schema_value": "RGE Qualibat 7131",
+      "verified_on": "2025-11-04",
+      "valid_until": "2026-11-04",
+      "evidence": [{ "kind": "certification", "reference": "QB-7131-33-1184", "issued_on": "2025-10-28", "checked_by": "Qualibat" }]
+    },
+    {
+      "key": "qualibat-patrimoine",
+      "label": "Qualification bâti ancien",
+      "value": "Qualibat 2192, maçonnerie de pierre de taille",
+      "cluster": "capacite",
+      "schema_property": "hasCredential",
+      "schema_value": "Qualibat 2192",
+      "verified_on": "2026-02-10",
+      "valid_until": "2027-02-10",
+      "evidence": [{ "kind": "certification", "reference": "QB-2192-33-0907", "issued_on": "2026-02-03", "checked_by": "Qualibat" }]
+    },
+    {
+      "key": "delai-demarrage",
+      "label": "Délai de démarrage",
+      "value": "Démarrage sous trois mois après signature",
+      "cluster": "engagement"
+    }
+  ]
+}

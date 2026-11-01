@@ -1,0 +1,92 @@
+{
+  "_note": "Noyau de démonstration: un cabinet de conseil sans ancrage local — preuve que le territoire optionnel (Chantier.territoire = None) et le référentiel minimal (referentiels/national.json) suffisent à représenter une activité entièrement à distance, sans changer une ligne du Noyau ni des surfaces.",
+  "entity_id": "conseil-remote",
+  "name": "Delta Conseil",
+  "category": "cabinet de conseil",
+  "legal_id": "901345672",
+  "contact_url": "https://delta-conseil.fr/",
+  "claims": [
+    {
+      "key": "immatriculation",
+      "label": "Existence légale",
+      "value": "SASU immatriculée au RCS de Paris depuis janvier 2020",
+      "cluster": "identite",
+      "schema_property": "foundingDate",
+      "schema_value": "2020-01",
+      "verified_on": "2026-06-01",
+      "valid_until": "2027-06-01",
+      "evidence": [
+        {
+          "kind": "immatriculation",
+          "reference": "RCS PARIS 901345672",
+          "issued_on": "2026-05-20",
+          "checked_by": "Source Primaire"
+        }
+      ]
+    }
+  ],
+  "chantiers": [
+    {
+      "id": "mc-01",
+      "nature": "mission-conseil",
+      "completed_on": "2025-05-20",
+      "size": 5,
+      "budget_eur": 7500,
+      "provenance": "facture",
+      "reference": "F2025-104"
+    },
+    {
+      "id": "mc-02",
+      "nature": "mission-conseil",
+      "completed_on": "2025-09-12",
+      "size": 8,
+      "budget_eur": 11200,
+      "provenance": "facture",
+      "reference": "F2025-176"
+    },
+    {
+      "id": "mc-03",
+      "nature": "mission-conseil",
+      "completed_on": "2026-01-15",
+      "size": 6,
+      "budget_eur": 8700,
+      "provenance": "facture",
+      "reference": "F2026-012"
+    },
+    {
+      "id": "mc-04",
+      "nature": "mission-conseil",
+      "completed_on": "2026-04-03",
+      "size": 7,
+      "budget_eur": 9900,
+      "provenance": "facture",
+      "reference": "F2026-058"
+    },
+    {
+      "id": "mc-05",
+      "nature": "mission-conseil",
+      "completed_on": "2026-06-18",
+      "size": 4,
+      "budget_eur": 6200,
+      "provenance": "facture",
+      "reference": "F2026-091"
+    },
+    {
+      "id": "aud-01",
+      "nature": "audit-professionnel",
+      "completed_on": "2025-11-04",
+      "size": 3,
+      "budget_eur": 5400,
+      "provenance": "facture",
+      "reference": "F2025-152"
+    },
+    {
+      "id": "form-01",
+      "nature": "formation-professionnelle",
+      "completed_on": "2026-02-10",
+      "size": 2,
+      "budget_eur": 3200,
+      "provenance": "vocal"
+    }
+  ]
+}

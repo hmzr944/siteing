@@ -1,0 +1,23 @@
+{
+  "id": "acces-plomberie",
+  "label": "Accès Plomberie — plomberie — Lyon",
+  "category": "plomberie",
+  "zone": "Lyon",
+  "entities": [
+    {
+      "name": "Accès Plomberie",
+      "is_client": true,
+      "domains": []
+    },
+    {
+      "name": "Plombier 7",
+      "is_client": false,
+      "domains": []
+    },
+    {
+      "name": "Blicko",
+      "is_client": false,
+      "domains": []
+    }
+  ]
+}
